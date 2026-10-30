@@ -64,6 +64,24 @@ export const GAMES: ArcadeGame[] = [
     comingSoon: true,
     cabinetArt: "▲  ☄️  💥",
   },
+  {
+    id: "balloon-pup",
+    title: "BALLOON PUP",
+    subtitle: "Float Through the Spikes",
+    description: "Tap to puff a little green pup and its heart balloon up through gaps in rows of metal spikes. Don't let the balloon pop!",
+    developer: "Sean",
+    genre: "Endless Flyer",
+    themeColor: {
+      primary: "#39ff14",
+      border: "border-green-400",
+      shadow: "shadow-[0_0_25px_rgba(57,255,20,0.5)]",
+      text: "text-green-400",
+      bgAccent: "bg-green-400/10",
+    },
+    payout: "2 - 50 Tickets",
+    comingSoon: false,
+    cabinetArt: "🐶 🎈 ▲",
+  },
 ];
 
 export function getGameById(id: string): ArcadeGame | undefined {
