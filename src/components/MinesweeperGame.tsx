@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, useSyncExternalStore } from "react";
 import { useTickets } from "@/context/TicketContext";
+import { GirMascot } from "@/components/GirMascot";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -14,9 +15,9 @@ interface DifficultyConfig {
 }
 
 const CONFIGS: Record<Difficulty, DifficultyConfig> = {
-  easy: { name: "EASY", rows: 8, cols: 8, mines: 10, reward: 30 },
-  medium: { name: "MEDIUM", rows: 10, cols: 10, mines: 18, reward: 50 },
-  hard: { name: "EXPERT", rows: 12, cols: 12, mines: 30, reward: 80 },
+  easy: { name: "EASY", rows: 10, cols: 10, mines: 18, reward: 30 },
+  medium: { name: "MEDIUM", rows: 50, cols: 50, mines: 350, reward: 60 },
+  hard: { name: "EXPERT", rows: 99, cols: 99, mines: 1400, reward: 100 },
 };
 
 interface Cell {
@@ -98,20 +99,41 @@ function generateMines(startR: number, startC: number, cfg: DifficultyConfig): C
   // Calculate neighbor counts
   for (let r = 0; r < cfg.rows; r++) {
     for (let c = 0; c < cfg.cols; c++) {
-      if (newBoard[r][c].isMine) continue;
-      let count = 0;
-      for (const [dr, dc] of DIRECTIONS) {
-        const nr = r + dr;
-        const nc = c + dc;
-        if (nr >= 0 && nr < cfg.rows && nc >= 0 && nc < cfg.cols && newBoard[nr][nc].isMine) {
-          count++;
+      if (newBoard[r][c].isMine) {
+        for (const [dr, dc] of DIRECTIONS) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr >= 0 && nr < cfg.rows && nc >= 0 && nc < cfg.cols) {
+            newBoard[nr][nc].neighborMines++;
+          }
         }
       }
-      newBoard[r][c].neighborMines = count;
     }
   }
 
   return newBoard;
+}
+
+function getTileDimensions(difficulty: Difficulty, compact: boolean) {
+  if (difficulty === "hard") {
+    return {
+      size: "18px",
+      fontSize: "text-[8px]",
+      iconSize: "text-[10px]",
+    };
+  }
+  if (difficulty === "medium") {
+    return {
+      size: "22px",
+      fontSize: "text-[10px]",
+      iconSize: "text-xs",
+    };
+  }
+  return {
+    size: compact ? "32px" : "38px",
+    fontSize: "text-xs sm:text-sm",
+    iconSize: "text-base",
+  };
 }
 
 // Web Audio API Retro Sound FX Generator
@@ -327,7 +349,7 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
   useEffect(() => {
     if (gameStatus === "playing") {
       timerRef.current = setInterval(() => {
-        setTimer((t) => (t >= 999 ? 999 : t + 1));
+        setTimer((t) => (t >= 9999 ? 9999 : t + 1));
       }, 1000);
     } else {
       if (timerRef.current) {
@@ -406,13 +428,14 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
 
     play8BitSound("click", isMuted);
 
-    // Flood fill
+    // Flood fill (O(N) BFS with index pointer)
     const newBoard = currentBoard.map((row) => row.map((cl) => ({ ...cl })));
     const queue: [number, number][] = [[r, c]];
     newBoard[r][c].isRevealed = true;
 
-    while (queue.length > 0) {
-      const [currR, currC] = queue.shift()!;
+    let head = 0;
+    while (head < queue.length) {
+      const [currR, currC] = queue[head++];
       const currCell = newBoard[currR][currC];
 
       if (currCell.neighborMines === 0) {
@@ -489,9 +512,10 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
         return;
       }
 
-      // Continue cascade for any 0s uncovered by chording
-      while (queue.length > 0) {
-        const [currR, currC] = queue.shift()!;
+      // Continue cascade for any 0s uncovered by chording (O(N) BFS)
+      let head = 0;
+      while (head < queue.length) {
+        const [currR, currC] = queue[head++];
         const currCell = newBoard[currR][currC];
         if (currCell.neighborMines === 0) {
           for (const [dr, dc] of DIRECTIONS) {
@@ -581,20 +605,16 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
     }
   };
 
-  const getFaceIcon = () => {
-    if (gameStatus === "won") return "😎";
-    if (gameStatus === "lost") return "😵";
-    if (isPressing) return "😮";
-    return "🙂";
-  };
-
-  const remainingMines = Math.max(-99, config.mines - flagCount);
+  const digitCount = config.mines >= 1000 ? 4 : 3;
+  const remainingMines = Math.max(-999, config.mines - flagCount);
   const formattedMines = remainingMines < 0
-    ? `-${Math.abs(remainingMines).toString().padStart(2, "0")}`
-    : remainingMines.toString().padStart(3, "0");
-  const formattedTimer = timer.toString().padStart(3, "0");
+    ? `-${Math.abs(remainingMines).toString().padStart(digitCount - 1, "0")}`
+    : remainingMines.toString().padStart(digitCount, "0");
+  const formattedTimer = Math.min(timer, 9999).toString().padStart(digitCount, "0");
 
   const currentBest = bestTimes[difficulty];
+  const tileDims = getTileDimensions(difficulty, compact);
+  const isDense = difficulty === "hard" || difficulty === "medium";
 
   return (
     <div className="flex flex-col items-center select-none w-full max-w-full">
@@ -670,7 +690,7 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
       </div>
 
       {/* Retro Classic Cabinet Console Container */}
-      <div className="inline-block p-4 sm:p-6 rounded-2xl border-4 border-emerald-500/80 bg-[#101524] shadow-[0_0_35px_rgba(16,185,129,0.35)] relative overflow-hidden">
+      <div className="inline-block p-4 sm:p-6 rounded-2xl border-4 border-emerald-500/80 bg-[#101524] shadow-[0_0_35px_rgba(16,185,129,0.35)] relative overflow-hidden max-w-full">
         
         {/* Top Status Bar (LED display + Smiley) */}
         <div className="mb-4 p-3 rounded-xl border-2 border-gray-800 bg-[#080b14] flex items-center justify-between gap-4 shadow-inner">
@@ -680,14 +700,26 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
             <span>{formattedMines}</span>
           </div>
 
-          {/* Smiley Reset Button */}
+          {/* Main Character (GIR) Reset Button */}
           <button
             type="button"
             onClick={resetGame}
-            className="w-11 h-11 rounded-lg border-2 border-yellow-400 bg-yellow-400/20 hover:bg-yellow-400 hover:scale-105 active:scale-95 flex items-center justify-center text-2xl transition-all shadow-[0_0_15px_rgba(255,230,0,0.3)]"
-            title="Reset Game [R]"
+            className="w-11 h-11 rounded-lg border-2 border-lime-400 bg-lime-400/20 hover:bg-lime-400/40 hover:scale-105 active:scale-95 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(163,230,53,0.3)] cursor-pointer overflow-hidden group p-0.5"
+            title="Reset Game [R] • Character: GIR"
           >
-            {getFaceIcon()}
+            <div
+              className={`w-9 h-9 flex items-center justify-center transition-all duration-150 ${
+                gameStatus === "won"
+                  ? "scale-110 drop-shadow-[0_0_8px_rgba(250,204,21,0.9)] animate-bounce"
+                  : gameStatus === "lost"
+                  ? "rotate-45 grayscale opacity-70 scale-90"
+                  : isPressing
+                  ? "scale-90"
+                  : "group-hover:scale-105"
+              }`}
+            >
+              <GirMascot className="w-8 h-8 pointer-events-none" showHalo={false} />
+            </div>
           </button>
 
           {/* LED Timer Display */}
@@ -699,9 +731,9 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
 
         {/* The Minefield Grid */}
         <div
-          className="inline-grid gap-1 p-2.5 rounded-xl border-2 border-emerald-950 bg-black shadow-inner overflow-x-auto max-w-full"
+          className="inline-grid gap-[1px] p-2 sm:p-2.5 rounded-xl border-2 border-emerald-950 bg-black shadow-inner overflow-auto max-w-[90vw] sm:max-w-2xl md:max-w-3xl lg:max-w-5xl max-h-[68vh]"
           style={{
-            gridTemplateColumns: `repeat(${config.cols}, minmax(0, 1fr))`,
+            gridTemplateColumns: `repeat(${config.cols}, ${tileDims.size})`,
           }}
           onMouseDown={() => setIsPressing(true)}
           onMouseUp={() => setIsPressing(false)}
@@ -710,7 +742,6 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
           {board.map((row, r) =>
             row.map((cell, c) => {
               const isDetonated = detonatedCell?.r === r && detonatedCell?.c === c;
-              const tileSize = compact ? "32px" : "38px";
 
               return (
                 <button
@@ -720,27 +751,29 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
                   onContextMenu={(e) => handleToggleFlag(r, c, e)}
                   disabled={gameStatus === "won" || gameStatus === "lost"}
                   style={{
-                    width: tileSize,
-                    height: tileSize,
-                    minWidth: tileSize,
-                    minHeight: tileSize,
+                    width: tileDims.size,
+                    height: tileDims.size,
+                    minWidth: tileDims.size,
+                    minHeight: tileDims.size,
                   }}
                   className={`
-                    flex items-center justify-center font-pixel text-xs sm:text-sm font-bold transition-transform duration-75 select-none rounded-sm
+                    flex items-center justify-center font-pixel ${tileDims.fontSize} font-bold transition-transform duration-75 select-none rounded-[1px] p-0 leading-none
                     ${
                       cell.isRevealed
                         ? isDetonated
                           ? "bg-red-600 text-white border-2 border-red-300 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]"
                           : cell.isMine
                           ? "bg-red-950/70 border border-red-800 text-red-400"
-                          : "bg-[#181d2e] border border-gray-800 text-gray-200"
+                          : "bg-[#181d2e] border border-gray-800/80 text-gray-200"
+                        : isDense
+                        ? "bg-[#252c42] hover:bg-[#313955] border-t border-l border-gray-500 border-b border-r border-gray-950 active:border-gray-700 active:bg-[#1a2033]"
                         : "bg-[#252c42] hover:bg-[#313955] border-t-2 border-l-2 border-gray-400 border-b-2 border-r-2 border-gray-900 active:border-gray-700 active:bg-[#1a2033] shadow-sm"
                     }
                   `}
                 >
                   {cell.isRevealed ? (
                     cell.isMine ? (
-                      <span className="text-sm">💣</span>
+                      <span className={tileDims.iconSize}>💣</span>
                     ) : cell.neighborMines > 0 ? (
                       <span className={getNumberColor(cell.neighborMines)}>
                         {cell.neighborMines}
@@ -749,7 +782,7 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
                       ""
                     )
                   ) : cell.isFlagged ? (
-                    <span className="text-sm filter drop-shadow">🚩</span>
+                    <span className={`${tileDims.iconSize} filter drop-shadow`}>🚩</span>
                   ) : (
                     ""
                   )}
