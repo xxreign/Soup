@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en" className={`${pressStart2P.variable} ${bangers.variable} dark`}>
       <body className="min-h-screen bg-[#07010a] text-gray-100 flex flex-col font-pixel selection:bg-pink-500 selection:text-white">
         <TicketProvider>
-          <div className="relative flex flex-col min-h-screen arcade-grunge-bg">
+          <div className="relative flex flex-col min-h-screen arcade-grunge-bg overflow-x-clip">
             <HideOnGameScreen>
               <Header />
             </HideOnGameScreen>
