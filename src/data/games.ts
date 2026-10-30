@@ -64,6 +64,24 @@ export const GAMES: ArcadeGame[] = [
     comingSoon: true,
     cabinetArt: "▲  ☄️  💥",
   },
+  {
+    id: "minesweeper",
+    title: "MINESWEEPER",
+    subtitle: "Tactical Minefield Clearance",
+    description: "Scan the danger zone, calculate blast radiuses, and flag hidden explosives to defuse the grid and win arcade tickets!",
+    developer: "Letian",
+    genre: "Puzzle / Logic",
+    themeColor: {
+      primary: "#10b981",
+      border: "border-emerald-400",
+      shadow: "shadow-[0_0_25px_rgba(16,185,129,0.5)]",
+      text: "text-emerald-400",
+      bgAccent: "bg-emerald-400/10",
+    },
+    payout: "30 - 80 Tickets",
+    comingSoon: false,
+    cabinetArt: "🚩  💣  🔢",
+  },
 ];
 
 export function getGameById(id: string): ArcadeGame | undefined {

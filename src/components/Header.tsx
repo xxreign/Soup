@@ -61,6 +61,18 @@ export function Header() {
           </Link>
 
           <Link
+            href="/games/minesweeper"
+            className={`px-3 py-2 rounded border-2 transition-all duration-200 flex items-center gap-2 ${
+              pathname.includes("minesweeper")
+                ? "border-emerald-400 bg-emerald-950/60 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.4)]"
+                : "border-gray-800 text-gray-400 hover:border-emerald-500/50 hover:text-emerald-300"
+            }`}
+          >
+            <span>💣</span>
+            <span>MINESWEEPER</span>
+          </Link>
+
+          <Link
             href="/shop"
             className={`px-3 py-2 rounded border-2 transition-all duration-200 flex items-center gap-2 ${
               pathname === "/shop"
