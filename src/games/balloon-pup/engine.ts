@@ -235,7 +235,10 @@ const drawSprite = (context: CanvasRenderingContext2D, sprite: HTMLImageElement,
 };
 
 // A seamless square tile packed with overlapping pups, so the repeat has no empty space.
+let cachedWallpaper: string | null = null;
+
 export function pupWallpaper(size = 160, sprite?: HTMLImageElement) {
+  if (cachedWallpaper) return cachedWallpaper;
   const ratio = Math.min(window.devicePixelRatio || 1, 2);
   const tile = document.createElement("canvas");
   tile.width = size * ratio;
@@ -280,7 +283,11 @@ export function pupWallpaper(size = 160, sprite?: HTMLImageElement) {
       });
     });
   });
-  return tile.toDataURL();
+  const url = tile.toDataURL();
+  if (spriteReady(sprite)) {
+    cachedWallpaper = url;
+  }
+  return url;
 }
 
 /** Mounts the game into `canvas` and returns a function that stops it and removes its listeners. */
@@ -658,6 +665,7 @@ export function mountBalloonPup(canvas: HTMLCanvasElement, options: BalloonPupOp
 
   canvas.addEventListener("pointerdown", onPointerDown);
   window.addEventListener("keydown", onKeyDown);
+  resize();
   const observer = new ResizeObserver(resize);
   observer.observe(canvas);
   reset();
