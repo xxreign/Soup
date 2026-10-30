@@ -1,7 +1,31 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useSyncExternalStore } from "react";
 import { useTickets } from "@/context/TicketContext";
+
+function subscribeSubwayBest(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  window.addEventListener("subway_best_updated", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("subway_best_updated", callback);
+  };
+}
+
+function getSubwayBestSnapshot(): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    const saved = localStorage.getItem("subwaySurfersBest") || localStorage.getItem("alienRunnerBest");
+    return saved ? parseInt(saved, 10) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function getServerSubwayBestSnapshot(): number {
+  return 0;
+}
 
 interface Item {
   lane: number; // 0, 1, 2
@@ -144,6 +168,57 @@ class ArcadeSound {
   }
 }
 
+const calculateTickets = (dist: number, coins: number) => {
+  return Math.floor(dist / 100) + Math.floor(coins / 10);
+};
+
+// 3D perspective projection
+const xy = (l: number, z: number) => {
+  const t = Math.min(1.2, Math.max(0, z));
+  const p = Math.pow(t, 1.34);
+  return {
+    x: 240 + (l - 1) * (39 + 124 * p),
+    y: 122 + 478 * p,
+    s: 0.24 + 1.25 * p,
+  };
+};
+
+const fill = (
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  color: string,
+  r = 0
+) => {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  if (typeof ctx.roundRect === "function" && r > 0) {
+    ctx.roundRect(x, y, w, h, r);
+  } else {
+    ctx.rect(x, y, w, h);
+  }
+  ctx.fill();
+};
+
+const linePath = (
+  ctx: CanvasRenderingContext2D,
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  color: string,
+  width: number
+) => {
+  ctx.strokeStyle = color;
+  ctx.lineWidth = width;
+  ctx.beginPath();
+  ctx.moveTo(ax, ay);
+  ctx.lineTo(bx, by);
+  ctx.stroke();
+};
+
 export function SubwaySurfersGame() {
   const { addTickets } = useTickets();
 
@@ -156,7 +231,7 @@ export function SubwaySurfersGame() {
   const [hudDistance, setHudDistance] = useState<number>(0);
   const [hudCoins, setHudCoins] = useState<number>(0);
   const [hudTickets, setHudTickets] = useState<number>(0);
-  const [highScore, setHighScore] = useState<number>(0);
+  const highScore = useSyncExternalStore(subscribeSubwayBest, getSubwayBestSnapshot, getServerSubwayBestSnapshot);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [ticketAwardNotification, setTicketAwardNotification] = useState<string | null>(null);
 
@@ -174,90 +249,9 @@ export function SubwaySurfersGame() {
   const speedRef = useRef<number>(0.47);
   const lastTimeRef = useRef<number>(0);
   const rafRef = useRef<number>(0);
+  const loopRef = useRef<(now: number) => void>(() => {});
 
-  // Initialize audio and best score
-  useEffect(() => {
-    audioRef.current = new ArcadeSound();
-    try {
-      const savedBest = localStorage.getItem("subwaySurfersBest") || localStorage.getItem("alienRunnerBest");
-      if (savedBest) {
-        setHighScore(parseInt(savedBest, 10) || 0);
-      }
-    } catch {
-      // localStorage unavailable
-    }
-
-    // Preload hero sprite
-    const img = new Image();
-    img.src = "/images/alien-runner.png";
-    img.onload = () => {
-      heroImageRef.current = img;
-      if (stateRef.current === "ready") {
-        renderScene();
-      }
-    };
-    heroImageRef.current = img;
-
-    // Initial render
-    renderScene();
-
-    return () => {
-      cancelAnimationFrame(rafRef.current);
-    };
-  }, []);
-
-  const calculateTickets = (dist: number, coins: number) => {
-    return Math.floor(dist / 100) + Math.floor(coins / 10);
-  };
-
-  // 3D perspective projection
-  const xy = (l: number, z: number) => {
-    const t = Math.min(1.2, Math.max(0, z));
-    const p = Math.pow(t, 1.34);
-    return {
-      x: 240 + (l - 1) * (39 + 124 * p),
-      y: 122 + 478 * p,
-      s: 0.24 + 1.25 * p,
-    };
-  };
-
-  const fill = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    w: number,
-    h: number,
-    color: string,
-    r = 0
-  ) => {
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    if (typeof ctx.roundRect === "function" && r > 0) {
-      ctx.roundRect(x, y, w, h, r);
-    } else {
-      ctx.rect(x, y, w, h);
-    }
-    ctx.fill();
-  };
-
-  const linePath = (
-    ctx: CanvasRenderingContext2D,
-    ax: number,
-    ay: number,
-    bx: number,
-    by: number,
-    color: string,
-    width: number
-  ) => {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = width;
-    ctx.beginPath();
-    ctx.moveTo(ax, ay);
-    ctx.lineTo(bx, by);
-    ctx.stroke();
-  };
-
-  const renderScene = () => {
+  const renderScene = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -443,7 +437,27 @@ export function SubwaySurfersGame() {
     ctx.font = "900 13px system-ui, sans-serif";
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
     ctx.fillText("◀  SWITCH LANES  ▶", 240, 32);
-  };
+  }, []);
+
+  useEffect(() => {
+    audioRef.current = new ArcadeSound();
+
+    const img = new Image();
+    img.src = "/images/alien-runner.png";
+    img.onload = () => {
+      heroImageRef.current = img;
+      if (stateRef.current === "ready") {
+        renderScene();
+      }
+    };
+    heroImageRef.current = img;
+
+    renderScene();
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+    };
+  }, [renderScene]);
 
   const handleFail = useCallback(() => {
     stateRef.current = "over";
@@ -456,16 +470,17 @@ export function SubwaySurfersGame() {
     const earnedTickets = calculateTickets(finalDist, finalCoins);
 
     // Update and save best distance
-    setHighScore((prev) => {
-      const nextBest = Math.max(prev, finalDist);
+    const prevBest = getSubwayBestSnapshot();
+    const nextBest = Math.max(prevBest, finalDist);
+    if (nextBest > prevBest) {
       try {
         localStorage.setItem("subwaySurfersBest", nextBest.toString());
         localStorage.setItem("alienRunnerBest", nextBest.toString());
+        window.dispatchEvent(new Event("subway_best_updated"));
       } catch {
         // localStorage unavailable
       }
-      return nextBest;
-    });
+    }
 
     // Award real tickets to player wallet!
     if (earnedTickets > 0) {
@@ -526,21 +541,24 @@ export function SubwaySurfersGame() {
       const currentJump = jumpRef.current;
       const currentSlide = slideRef.current;
 
-      for (const o of itemsRef.current) {
-        o.z += speedRef.current * dt;
+      const updatedItems: Item[] = [];
+      for (const item of itemsRef.current) {
+        const nextZ = item.z + speedRef.current * dt;
+        let isHit = item.hit;
 
-        if (o.z >= 0.85 && !o.hit) {
-          o.hit = true;
-          if (o.lane === currentLane) {
-            if (o.type === "coin") {
+        if (nextZ >= 0.85 && !isHit) {
+          isHit = true;
+          if (item.lane === currentLane) {
+            if (item.type === "coin") {
               coinsRef.current += 1;
               audioRef.current?.playCoin();
-            } else if (o.type === "barrier" && currentJump > 0.16) {
+            } else if (item.type === "barrier" && currentJump > 0.16) {
               // Successfully leaped over barrier!
-            } else if (o.type === "sign" && currentSlide > 0.14) {
+            } else if (item.type === "sign" && currentSlide > 0.14) {
               // Successfully ducked under overhead sign!
             } else {
               // Collision!
+              itemsRef.current = updatedItems;
               renderScene();
               setHudDistance(Math.floor(distRef.current));
               setHudCoins(coinsRef.current);
@@ -550,10 +568,13 @@ export function SubwaySurfersGame() {
             }
           }
         }
+
+        if (nextZ < 1.16) {
+          updatedItems.push({ ...item, z: nextZ, hit: isHit });
+        }
       }
 
-      // Cleanup past items
-      itemsRef.current = itemsRef.current.filter((x) => x.z < 1.16);
+      itemsRef.current = updatedItems;
 
       // Render frame
       renderScene();
@@ -563,10 +584,14 @@ export function SubwaySurfersGame() {
       setHudCoins(coinsRef.current);
       setHudTickets(calculateTickets(distRef.current, coinsRef.current));
 
-      rafRef.current = requestAnimationFrame(gameLoop);
+      rafRef.current = requestAnimationFrame((t) => loopRef.current(t));
     },
-    [handleFail]
+    [handleFail, renderScene]
   );
+
+  useEffect(() => {
+    loopRef.current = gameLoop;
+  }, [gameLoop]);
 
   const startGame = useCallback(() => {
     stateRef.current = "playing";
@@ -590,8 +615,8 @@ export function SubwaySurfersGame() {
 
     lastTimeRef.current = performance.now();
     cancelAnimationFrame(rafRef.current);
-    rafRef.current = requestAnimationFrame(gameLoop);
-  }, [gameLoop]);
+    rafRef.current = requestAnimationFrame((t) => loopRef.current(t));
+  }, []);
 
   const pauseGame = useCallback(() => {
     if (stateRef.current === "playing") {
@@ -603,9 +628,9 @@ export function SubwaySurfersGame() {
       setGameState("playing");
       lastTimeRef.current = performance.now();
       cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(gameLoop);
+      rafRef.current = requestAnimationFrame((t) => loopRef.current(t));
     }
-  }, [gameLoop]);
+  }, []);
 
   const moveLane = useCallback((dir: number) => {
     if (stateRef.current !== "playing") return;
