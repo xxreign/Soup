@@ -100,10 +100,14 @@ export default function HomePage() {
                     {game.cabinetArt}
                   </div>
 
-                  {/* COMING SOON Sticker Badge */}
-                  {game.comingSoon && (
+                  {/* COMING SOON / READY TO PLAY Sticker Badge */}
+                  {game.comingSoon ? (
                     <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-pink-500 text-white font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#000] retro-blink">
                       ★ COMING SOON ★
+                    </div>
+                  ) : (
+                    <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-lime-400 text-black font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#ff0080] font-black animate-pulse">
+                      ★ READY TO PLAY ★
                     </div>
                   )}
                 </div>
@@ -199,7 +203,7 @@ export default function HomePage() {
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#00e5ff] space-y-2">
             <div className="font-comic text-lg text-cyan-400">4. Subway Surfers</div>
             <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
-              Assigned to <strong>Teammate 4</strong>. Route: <code className="text-yellow-300">/games/subway-surfers</code>
+              Built by <strong>Reign</strong>. Route: <code className="text-yellow-300">/games/subway-surfers</code>
             </p>
           </div>
 
