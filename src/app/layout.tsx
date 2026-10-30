@@ -16,8 +16,14 @@ const bangers = localFont({
   display: "swap",
 });
 
+const creepster = localFont({
+  src: "../fonts/Creepster-Regular.ttf",
+  variable: "--font-creepster",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "SOUP ARCADE | Cupcake Attack Toxic Retro Floor",
+  title: "CUPCAKE ATTACK | Soup Retro Arcade",
   description: "Crossy Road, Flappy Bird, Minesweeper, Subway Surfers - play games and win tickets!",
 };
 
@@ -27,12 +33,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${pressStart2P.variable} ${bangers.variable} dark`}>
-      <body className="min-h-screen bg-[#07010a] text-gray-100 flex flex-col font-pixel selection:bg-pink-500 selection:text-white">
+    <html lang="en" className={`${pressStart2P.variable} ${bangers.variable} ${creepster.variable} dark`}>
+      <body className="min-h-screen bg-[#060009] text-gray-100 flex flex-col font-pixel selection:bg-pink-500 selection:text-white">
         <TicketProvider>
           <div className="relative flex flex-col min-h-screen arcade-grunge-bg">
             <Header />
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+            <main className="flex-1 w-full max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
               {children}
             </main>
             

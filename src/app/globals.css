@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07010a;
+  --background: #060009;
   --foreground: #f4f4f5;
 }
 
@@ -20,10 +20,20 @@ body {
   letter-spacing: 0.04em;
 }
 
+.font-creepster {
+  font-family: var(--font-creepster), "Creepster", cursive, Impact, sans-serif;
+  letter-spacing: 0.06em;
+}
+
 /* Comic cartoon text stroke */
 .text-stroke-black {
   -webkit-text-stroke: 3px #000;
   text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000;
+}
+
+.text-stroke-black-lg {
+  -webkit-text-stroke: 4px #000;
+  text-shadow: 6px 6px 0 #000, -3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000;
 }
 
 .text-stroke-black-sm {
@@ -56,11 +66,11 @@ body {
 
 /* Grunge / Splatter Background */
 .arcade-grunge-bg {
-  background-color: #07010a;
+  background-color: #060009;
   background-image: 
-    radial-gradient(circle at 50% 15%, rgba(255, 0, 128, 0.18) 0%, transparent 55%),
-    radial-gradient(circle at 85% 70%, rgba(163, 230, 53, 0.12) 0%, transparent 45%),
-    radial-gradient(circle at 15% 65%, rgba(0, 229, 255, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 50% 20%, rgba(255, 0, 128, 0.22) 0%, transparent 60%),
+    radial-gradient(circle at 85% 75%, rgba(163, 230, 53, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 15% 70%, rgba(0, 229, 255, 0.12) 0%, transparent 45%),
     radial-gradient(rgba(255, 0, 128, 0.08) 1.5px, transparent 1.5px);
   background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
 }
