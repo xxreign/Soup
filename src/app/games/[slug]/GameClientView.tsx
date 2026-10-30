@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArcadeGame } from "@/types/game";
 import { useTickets } from "@/context/TicketContext";
+import { GAME_COMPONENTS } from "@/games";
 
 interface GameClientViewProps {
   game: ArcadeGame;
 }
 
 export function GameClientView({ game }: GameClientViewProps) {
+  const PlayableGame = GAME_COMPONENTS[game.id];
   const { addTickets } = useTickets();
   const [ticketAwardMessage, setTicketAwardMessage] = useState<string | null>(null);
 
@@ -21,6 +23,9 @@ export function GameClientView({ game }: GameClientViewProps) {
       setTicketAwardMessage(null);
     }, 4000);
   };
+
+  // Playable games get the whole page to themselves, with no cabinet frame or arcade text.
+  if (PlayableGame) return <PlayableGame />;
 
   return (
     <div className="space-y-8 pb-12 max-w-5xl mx-auto">
