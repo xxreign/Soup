@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArcadeGame } from "@/types/game";
 import { useTickets } from "@/context/TicketContext";
+import { MinesweeperGame } from "@/components/MinesweeperGame";
 import { GAME_COMPONENTS } from "@/games";
 
 interface GameClientViewProps {
@@ -24,7 +25,7 @@ export function GameClientView({ game }: GameClientViewProps) {
     }, 4000);
   };
 
-  // Playable games get the whole page to themselves, with no cabinet frame or arcade text.
+  // Playable games that have their own full layout (e.g. Balloon Pup)
   if (PlayableGame) return <PlayableGame />;
 
   return (
@@ -78,65 +79,75 @@ export function GameClientView({ game }: GameClientViewProps) {
           {/* Neon airbrush halo */}
           <div className="absolute inset-0 bg-radial from-pink-500/20 via-transparent to-transparent pointer-events-none" />
 
-          <div className="relative z-10 max-w-lg space-y-6">
-            
-            {/* Animated Cabinet Icon */}
-            <div className="text-5xl sm:text-6xl tracking-widest filter drop-shadow-[0_0_15px_rgba(255,255,255,0.8)] animate-pulse">
-              {game.cabinetArt}
+          {game.id === "minesweeper" ? (
+            <div className="relative z-10 w-full py-2 flex flex-col items-center">
+              <MinesweeperGame />
             </div>
-
-            {/* COMING SOON BANNER */}
-            <div className="space-y-3">
-              <div className="inline-block px-5 py-2 rounded-xl border-3 border-black bg-pink-500 text-white font-comic text-xl sm:text-2xl font-bold tracking-wider transform -rotate-2 shadow-[4px_4px_0_#a3e635] retro-blink">
-                ★ COMING SOON ★
-              </div>
-              <p className="font-comic text-2xl text-lime-400 text-stroke-black-sm">
-                STAGE 1 UNDER CONSTRUCTION
-              </p>
-              <p className="text-[11px] font-pixel text-gray-300 leading-relaxed max-w-md mx-auto">
-                {game.description}
-              </p>
-            </div>
-
-            {/* Teammate instructions box inside cabinet */}
-            <div className="p-4 rounded-xl border-3 border-black bg-[#150522] text-[10px] font-pixel text-gray-200 text-left space-y-2 shadow-[4px_4px_0_#000]">
-              <div className="text-lime-400 font-comic text-base flex items-center gap-1.5">
-                <span>⚡</span>
-                <span>FOR {game.developer.toUpperCase()}: BUILD YOUR GAME COMPONENT HERE</span>
-              </div>
-              <p className="text-gray-400 leading-relaxed">
-                Replace this placeholder with your game canvas, loop, or React UI inside:
-              </p>
-              <div className="p-2 rounded bg-black font-mono text-[9px] text-yellow-300 border border-gray-800 overflow-x-auto">
-                src/app/games/[slug]/GameClientView.tsx
-              </div>
-            </div>
-
-            {/* Simulated Reward Button to test Ticket Wallet */}
-            <div className="pt-2 space-y-2">
-              <button
-                onClick={handleSimulateWin}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl font-comic text-lg font-bold border-3 border-black bg-lime-400 hover:bg-yellow-400 hover:text-black text-black transition-all duration-200 shadow-[4px_4px_0_#ff0080] active:translate-x-0.5 active:translate-y-0.5"
-              >
-                🎮 TEST WIN: EARN +35 TICKETS
-              </button>
-              
-              {ticketAwardMessage && (
-                <div className="p-2.5 rounded-xl border-2 border-black bg-lime-400 text-black font-comic text-sm animate-bounce shadow-[3px_3px_0_#000]">
-                  ✨ {ticketAwardMessage}
+          ) : (
+            <div className="relative z-10 max-w-lg space-y-6">
+              {/* COMING SOON BANNER */}
+              <div className="space-y-3">
+                <div className="inline-block px-5 py-2 rounded-xl border-3 border-black bg-pink-500 text-white font-comic text-xl sm:text-2xl font-bold tracking-wider transform -rotate-2 shadow-[4px_4px_0_#a3e635] retro-blink">
+                  ★ COMING SOON ★
                 </div>
-              )}
-            </div>
+                <p className="font-comic text-2xl text-lime-400 text-stroke-black-sm">
+                  STAGE 1 UNDER CONSTRUCTION
+                </p>
+                <p className="text-[11px] font-pixel text-gray-300 leading-relaxed max-w-md mx-auto">
+                  {game.description}
+                </p>
+              </div>
 
-          </div>
+              {/* Teammate instructions box inside cabinet */}
+              <div className="p-4 rounded-xl border-3 border-black bg-[#150522] text-[10px] font-pixel text-gray-200 text-left space-y-2 shadow-[4px_4px_0_#000]">
+                <div className="text-lime-400 font-comic text-base flex items-center gap-1.5">
+                  <span>⚡</span>
+                  <span>FOR {game.developer.toUpperCase()}: BUILD YOUR GAME COMPONENT HERE</span>
+                </div>
+                <p className="text-gray-400 leading-relaxed">
+                  Replace this placeholder with your game canvas, loop, or React UI inside:
+                </p>
+                <div className="p-2 rounded bg-black font-mono text-[9px] text-yellow-300 border border-gray-800 overflow-x-auto">
+                  src/app/games/[slug]/GameClientView.tsx
+                </div>
+              </div>
+
+              {/* Simulated Reward Button to test Ticket Wallet */}
+              <div className="pt-2 space-y-2">
+                <button
+                  onClick={handleSimulateWin}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl font-comic text-lg font-bold border-3 border-black bg-lime-400 hover:bg-yellow-400 hover:text-black text-black transition-all duration-200 shadow-[4px_4px_0_#ff0080] active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  🎮 TEST WIN: EARN +35 TICKETS
+                </button>
+                
+                {ticketAwardMessage && (
+                  <div className="p-2.5 rounded-xl border-2 border-black bg-lime-400 text-black font-comic text-sm animate-bounce shadow-[3px_3px_0_#000]">
+                    ✨ {ticketAwardMessage}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Cabinet Bottom Control Panel */}
         <div className="p-4 bg-[#0a0110] border-t-4 border-black flex flex-wrap items-center justify-between gap-3 text-xs font-pixel">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-gray-500">CONTROLS:</span>
-            <span className="px-2 py-1 rounded border border-gray-800 bg-gray-900 text-gray-300">ARROWS / WASD</span>
-            <span className="px-2 py-1 rounded border border-pink-700 bg-pink-950 text-pink-300">SPACEBAR</span>
+            {game.id === "minesweeper" ? (
+              <>
+                <span className="px-2 py-1 rounded border border-gray-800 bg-gray-900 text-gray-300">CLICK [DIG]</span>
+                <span className="px-2 py-1 rounded border border-pink-700 bg-pink-950 text-pink-300">RIGHT-CLICK / F [FLAG]</span>
+                <span className="px-2 py-1 rounded border border-lime-700 bg-lime-950 text-lime-300">R [RESET]</span>
+                <span className="px-2 py-1 rounded border border-yellow-700 bg-yellow-950 text-yellow-300">M [MUTE]</span>
+              </>
+            ) : (
+              <>
+                <span className="px-2 py-1 rounded border border-gray-800 bg-gray-900 text-gray-300">ARROWS / WASD</span>
+                <span className="px-2 py-1 rounded border border-pink-700 bg-pink-950 text-pink-300">SPACEBAR</span>
+              </>
+            )}
           </div>
 
           <Link
@@ -148,6 +159,41 @@ export function GameClientView({ game }: GameClientViewProps) {
         </div>
 
       </div>
+
+      {/* Minesweeper Additional Cabinet Dossier */}
+      {game.id === "minesweeper" && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-[10px]">
+          <div className="p-4 rounded-xl border-2 border-emerald-900/60 bg-[#070d18] space-y-2">
+            <div className="text-emerald-400 font-bold flex items-center gap-1.5">
+              <span>🎯</span>
+              <span>TACTICAL CHORDING</span>
+            </div>
+            <p className="text-gray-400 leading-relaxed">
+              Once you reveal a number, flag all suspected bombs around it. Click the revealed number again to instantly reveal all other adjacent tiles!
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl border-2 border-yellow-900/60 bg-[#141005] space-y-2">
+            <div className="text-yellow-400 font-bold flex items-center gap-1.5">
+              <span>🎟️</span>
+              <span>JACKPOT PAYOUTS</span>
+            </div>
+            <p className="text-gray-400 leading-relaxed">
+              Defusing the minefield awards tickets directly to your header wallet: <strong className="text-white">Easy +30 🎟️</strong>, <strong className="text-white">Medium +50 🎟️</strong>, <strong className="text-white">Expert +80 🎟️</strong>!
+            </p>
+          </div>
+
+          <div className="p-4 rounded-xl border-2 border-cyan-900/60 bg-[#051118] space-y-2">
+            <div className="text-cyan-400 font-bold flex items-center gap-1.5">
+              <span>🕹️</span>
+              <span>8-BIT SYNTH AUDIO</span>
+            </div>
+            <p className="text-gray-400 leading-relaxed">
+              Features real-time synthesized retro audio blips, flags, sweeps, explosions, and victory fanfares. Press <strong className="text-white">M</strong> anytime to mute.
+            </p>
+          </div>
+        </div>
+      )}
 
     </div>
   );
