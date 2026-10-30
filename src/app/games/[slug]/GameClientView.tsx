@@ -16,7 +16,7 @@ export function GameClientView({ game }: GameClientViewProps) {
   const [ticketAwardMessage, setTicketAwardMessage] = useState<string | null>(null);
 
   const handleSimulateWin = () => {
-    const reward = 30;
+    const reward = 35;
     addTickets(reward);
     setTicketAwardMessage(`+${reward} TICKETS EARNED! CHECK YOUR WALLET IN THE HEADER!`);
     setTimeout(() => {
@@ -34,40 +34,40 @@ export function GameClientView({ game }: GameClientViewProps) {
       <div className="flex items-center justify-between">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-cyan-400 transition-colors py-1 px-3 rounded border border-gray-800 bg-gray-900/60"
+          className="inline-flex items-center gap-2 font-comic text-base text-lime-400 hover:text-white transition-colors py-1.5 px-4 rounded-xl border-3 border-black bg-black/80 shadow-[3px_3px_0_#ff0080]"
         >
           <span>←</span>
           <span>BACK TO ARCADE FLOOR</span>
         </Link>
 
-        <span className={`text-[10px] px-3 py-1 rounded border ${game.themeColor.border} ${game.themeColor.text} bg-black/50`}>
-          ASSIGNED TO: {game.developer}
+        <span className="font-comic text-base px-4 py-1.5 rounded-xl border-3 border-black bg-pink-500 text-white shadow-[3px_3px_0_#a3e635]">
+          DEV: {game.developer}
         </span>
       </div>
 
       {/* Arcade Cabinet Screen Simulation */}
-      <div className={`rounded-2xl border-4 ${game.themeColor.border} bg-[#0a0a18] ${game.themeColor.shadow} overflow-hidden`}>
+      <div className="rounded-3xl border-5 border-black bg-[#0d0214] shadow-[10px_10px_0_#000] overflow-hidden">
         
         {/* Cabinet Marquee Header */}
-        <div className="p-4 sm:p-6 bg-[#121228] border-b-2 border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="p-4 sm:p-6 bg-[#180525] border-b-4 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[10px] text-gray-400 mb-1">
-              <span>CABINET: {game.genre}</span>
+            <div className="flex items-center gap-2 text-[10px] font-pixel text-pink-400 mb-1">
+              <span>CABINET: {game.genre.toUpperCase()}</span>
               <span>•</span>
               <span>SLUG: {game.id}</span>
             </div>
-            <h1 className={`text-2xl sm:text-3xl font-extrabold tracking-wider ${game.themeColor.text}`}>
+            <h1 className="font-comic text-4xl sm:text-5xl font-black text-lime-400 text-stroke-black leading-tight tracking-wide">
               {game.title}
             </h1>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="font-comic text-lg text-pink-300 mt-0.5">
               {game.subtitle}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-yellow-400 border border-yellow-400/40 bg-yellow-950/40 px-3 py-1.5 rounded flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
+            <span className="font-comic text-xl text-yellow-300 border-3 border-black bg-yellow-400/20 px-4 py-2 rounded-xl flex items-center gap-2 shadow-[3px_3px_0_#000]">
               <span>🎟️</span>
-              <span>REWARD: {game.payout}</span>
+              <span>{game.payout}</span>
             </span>
           </div>
         </div>
@@ -75,8 +75,8 @@ export function GameClientView({ game }: GameClientViewProps) {
         {/* CRT Arcade Display Screen */}
         <div className="p-6 sm:p-12 bg-black crt-overlay min-h-[380px] flex flex-col items-center justify-center text-center relative overflow-hidden">
           
-          {/* Subtle grid in cabinet */}
-          <div className="absolute inset-0 arcade-grid-bg opacity-30 pointer-events-none" />
+          {/* Neon airbrush halo */}
+          <div className="absolute inset-0 bg-radial from-pink-500/20 via-transparent to-transparent pointer-events-none" />
 
           <div className="relative z-10 max-w-lg space-y-6">
             
@@ -87,25 +87,25 @@ export function GameClientView({ game }: GameClientViewProps) {
 
             {/* COMING SOON BANNER */}
             <div className="space-y-3">
-              <div className="inline-block px-4 py-2 rounded-lg border-2 border-pink-500 bg-pink-950/90 text-pink-300 text-sm sm:text-base font-bold tracking-widest retro-blink shadow-[0_0_20px_rgba(255,0,127,0.6)]">
+              <div className="inline-block px-5 py-2 rounded-xl border-3 border-black bg-pink-500 text-white font-comic text-xl sm:text-2xl font-bold tracking-wider transform -rotate-2 shadow-[4px_4px_0_#a3e635] retro-blink">
                 ★ COMING SOON ★
               </div>
-              <p className="text-xs sm:text-sm text-yellow-300 neon-glow-yellow">
+              <p className="font-comic text-2xl text-lime-400 text-stroke-black-sm">
                 STAGE 1 UNDER CONSTRUCTION
               </p>
-              <p className="text-[11px] text-gray-400 leading-relaxed max-w-md mx-auto">
+              <p className="text-[11px] font-pixel text-gray-300 leading-relaxed max-w-md mx-auto">
                 {game.description}
               </p>
             </div>
 
             {/* Teammate instructions box inside cabinet */}
-            <div className="p-4 rounded-lg border border-gray-800 bg-gray-950/80 text-[10px] text-gray-300 text-left space-y-2">
-              <div className="text-cyan-400 font-bold flex items-center gap-1.5">
+            <div className="p-4 rounded-xl border-3 border-black bg-[#150522] text-[10px] font-pixel text-gray-200 text-left space-y-2 shadow-[4px_4px_0_#000]">
+              <div className="text-lime-400 font-comic text-base flex items-center gap-1.5">
                 <span>⚡</span>
-                <span>FOR {game.developer.toUpperCase()}: READY FOR YOUR GAME CODE</span>
+                <span>FOR {game.developer.toUpperCase()}: BUILD YOUR GAME COMPONENT HERE</span>
               </div>
               <p className="text-gray-400 leading-relaxed">
-                When you are ready to build this game, replace this Coming Soon placeholder in:
+                Replace this placeholder with your game canvas, loop, or React UI inside:
               </p>
               <div className="p-2 rounded bg-black font-mono text-[9px] text-yellow-300 border border-gray-800 overflow-x-auto">
                 src/app/games/[slug]/GameClientView.tsx
@@ -116,13 +116,13 @@ export function GameClientView({ game }: GameClientViewProps) {
             <div className="pt-2 space-y-2">
               <button
                 onClick={handleSimulateWin}
-                className="w-full sm:w-auto px-6 py-3 rounded-lg font-pixel text-xs font-bold border-2 border-yellow-400 bg-yellow-400/10 hover:bg-yellow-400 hover:text-black text-yellow-300 transition-all duration-200 shadow-[0_0_15px_rgba(255,230,0,0.3)] active:scale-95"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl font-comic text-lg font-bold border-3 border-black bg-lime-400 hover:bg-yellow-400 hover:text-black text-black transition-all duration-200 shadow-[4px_4px_0_#ff0080] active:translate-x-0.5 active:translate-y-0.5"
               >
-                🎮 TEST WIN: EARN +30 TICKETS
+                🎮 TEST WIN: EARN +35 TICKETS
               </button>
               
               {ticketAwardMessage && (
-                <div className="p-2 rounded border border-green-500 bg-green-950/80 text-green-300 text-[10px] animate-bounce">
+                <div className="p-2.5 rounded-xl border-2 border-black bg-lime-400 text-black font-comic text-sm animate-bounce shadow-[3px_3px_0_#000]">
                   ✨ {ticketAwardMessage}
                 </div>
               )}
@@ -132,19 +132,18 @@ export function GameClientView({ game }: GameClientViewProps) {
         </div>
 
         {/* Cabinet Bottom Control Panel */}
-        <div className="p-4 bg-[#0c0c1b] border-t-2 border-gray-800 flex flex-wrap items-center justify-between gap-3 text-[10px]">
-          <div className="flex items-center gap-3">
-            <span className="text-gray-500">CABINET CONTROLS:</span>
-            <span className="px-2 py-1 rounded bg-gray-800 text-gray-300">JOYSTICK [ARROWS]</span>
-            <span className="px-2 py-1 rounded bg-pink-900/60 text-pink-300 border border-pink-700">BUTTON A [SPACE]</span>
+        <div className="p-4 bg-[#0a0110] border-t-4 border-black flex flex-wrap items-center justify-between gap-3 text-xs font-pixel">
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500">CONTROLS:</span>
+            <span className="px-2 py-1 rounded border border-gray-800 bg-gray-900 text-gray-300">ARROWS / WASD</span>
+            <span className="px-2 py-1 rounded border border-pink-700 bg-pink-950 text-pink-300">SPACEBAR</span>
           </div>
 
           <Link
             href="/shop"
-            className="text-pink-400 hover:text-pink-300 flex items-center gap-1.5 transition-colors"
+            className="font-comic text-base text-pink-400 hover:text-pink-300 flex items-center gap-1.5 transition-colors"
           >
-            <span>CASH IN TICKETS AT PRIZE SHOP</span>
-            <span>→</span>
+            <span>CASH IN TICKETS AT PRIZE SHOP →</span>
           </Link>
         </div>
 

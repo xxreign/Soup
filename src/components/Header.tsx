@@ -17,9 +17,9 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0a0a16]/95 backdrop-blur-md border-b-4 border-cyan-500 shadow-[0_4px_25px_rgba(0,240,255,0.25)]">
-      {/* Top Marquee Accent Line */}
-      <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-yellow-400 to-cyan-400 animate-pulse" />
+    <header className="sticky top-0 z-50 bg-[#060009]/95 backdrop-blur-md border-b-4 border-black shadow-[0_4px_30px_rgba(255,0,128,0.35)]">
+      {/* Top Spray Paint Accent Bar */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-lime-400 via-pink-500 to-cyan-400 animate-pulse" />
 
       <div className="max-w-7xl mx-auto px-4 py-3 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
         
@@ -28,32 +28,33 @@ export function Header() {
           href="/" 
           className="group flex items-center gap-3 transition-transform hover:scale-105"
         >
-          <div className="w-9 h-9 bg-pink-500 flex items-center justify-center rounded border-2 border-pink-300 shadow-[0_0_12px_rgba(255,0,127,0.7)] text-base">
-            👾
+          {/* Toxic Gir / Cupcake Badge */}
+          <div className="w-11 h-11 bg-lime-400 flex items-center justify-center rounded-xl border-3 border-black shadow-[3px_3px_0_#ff0080] text-xl transform -rotate-3 group-hover:rotate-0 transition-transform">
+            🧁
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-pixel text-lg sm:text-xl font-bold tracking-wider text-cyan-400 neon-glow-cyan">
-                NEON RETRO
+              <span className="font-comic text-2xl sm:text-3xl font-extrabold tracking-wider text-lime-400 text-stroke-black-sm neon-glow-lime">
+                SOUP
               </span>
-              <span className="font-pixel text-lg sm:text-xl font-bold tracking-wider text-pink-500 neon-glow-pink">
+              <span className="font-comic text-2xl sm:text-3xl font-extrabold tracking-wider text-pink-500 text-stroke-black-sm neon-glow-pink">
                 ARCADE
               </span>
             </div>
-            <p className="text-[9px] uppercase tracking-widest text-gray-400 font-pixel">
-              EST. 1984 • 1-UP YOUR SKILLS
+            <p className="text-[9px] uppercase tracking-widest text-pink-300/80 font-mono -mt-1">
+              THE MADNESS • THE HORROR • THE TICKETS
             </p>
           </div>
         </Link>
 
         {/* Navigation Tabs */}
-        <nav className="flex items-center gap-2 sm:gap-4 font-pixel text-xs">
+        <nav className="flex items-center gap-2 sm:gap-3 font-comic text-base tracking-wide">
           <Link
             href="/"
-            className={`px-3 py-2 rounded border-2 transition-all duration-200 flex items-center gap-2 ${
+            className={`px-4 py-1.5 rounded-lg border-2 border-black transition-all duration-150 flex items-center gap-2 shadow-[2px_2px_0_#000] active:translate-x-0.5 active:translate-y-0.5 ${
               pathname === "/"
-                ? "border-cyan-400 bg-cyan-950/60 text-cyan-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
-                : "border-gray-800 text-gray-400 hover:border-cyan-500/50 hover:text-cyan-300"
+                ? "bg-lime-400 text-black shadow-[3px_3px_0_#ff0080] font-bold"
+                : "bg-black/60 text-lime-300 hover:bg-lime-400/20 hover:text-white"
             }`}
           >
             <span>🕹️</span>
@@ -62,10 +63,10 @@ export function Header() {
 
           <Link
             href="/shop"
-            className={`px-3 py-2 rounded border-2 transition-all duration-200 flex items-center gap-2 ${
+            className={`px-4 py-1.5 rounded-lg border-2 border-black transition-all duration-150 flex items-center gap-2 shadow-[2px_2px_0_#000] active:translate-x-0.5 active:translate-y-0.5 ${
               pathname === "/shop"
-                ? "border-pink-500 bg-pink-950/60 text-pink-300 shadow-[0_0_15px_rgba(255,0,127,0.4)]"
-                : "border-gray-800 text-gray-400 hover:border-pink-500/50 hover:text-pink-300"
+                ? "bg-pink-500 text-white shadow-[3px_3px_0_#a3e635] font-bold"
+                : "bg-black/60 text-pink-300 hover:bg-pink-500/20 hover:text-white"
             }`}
           >
             <span>🎁</span>
@@ -73,29 +74,29 @@ export function Header() {
           </Link>
         </nav>
 
-        {/* Ticket Wallet Display & Quick Faucet */}
+        {/* Ticket Wallet Display & Faucet */}
         <div className="flex items-center gap-3">
           <div 
-            className={`flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg border-2 border-yellow-400 bg-[#171302] text-yellow-300 shadow-[0_0_18px_rgba(255,230,0,0.35)] transition-all duration-200 ${
-              pulse ? "scale-110 shadow-[0_0_25px_rgba(255,230,0,0.8)]" : ""
+            className={`flex items-center gap-2.5 px-3.5 py-1 rounded-xl border-3 border-black bg-yellow-400 text-black shadow-[3px_3px_0_#ff0080] transition-all duration-200 ${
+              pulse ? "scale-110 shadow-[0_0_25px_rgba(255,230,0,0.9)]" : ""
             }`}
           >
-            <span className="text-lg animate-bounce">🎟️</span>
+            <span className="text-xl animate-bounce">🎟️</span>
             <div className="text-right">
-              <div className="text-[8px] font-pixel text-yellow-500 uppercase tracking-wider">
+              <div className="text-[8px] font-pixel text-black font-bold uppercase tracking-wider">
                 TICKETS
               </div>
-              <div className="font-pixel text-sm sm:text-base font-bold text-yellow-300 neon-glow-yellow">
+              <div className="font-comic text-xl font-bold text-black leading-none">
                 {tickets.toLocaleString()}
               </div>
             </div>
           </div>
 
-          {/* Quick test ticket faucet so teammates can test earning immediately */}
+          {/* Quick test ticket faucet */}
           <button
             onClick={handleTestEarn}
             title="Dev Faucet: Add 25 Test Tickets"
-            className="font-pixel text-[9px] px-2.5 py-2 rounded bg-yellow-500/10 hover:bg-yellow-500/25 text-yellow-400 border border-yellow-500/40 hover:border-yellow-400 transition-colors active:scale-95"
+            className="font-comic text-sm px-3 py-1.5 rounded-lg bg-pink-500 text-white border-2 border-black shadow-[2px_2px_0_#a3e635] hover:bg-pink-400 transition-transform active:scale-95"
           >
             +25 🎟️
           </button>
