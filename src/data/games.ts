@@ -66,9 +66,9 @@ export const GAMES: ArcadeGame[] = [
   {
     id: "subway-surfers",
     title: "SUBWAY SURFERS",
-    subtitle: "Rail-Grinding Sprint",
-    description: "Dash down metro railway tracks, surf over speeding train carriages, snatch coin magnets, and outrun the grumpy inspector with spray can in hand!",
-    developer: "Teammate 4",
+    subtitle: "Alien Rail-Grinding Sprint",
+    description: "Dash down metro railway tracks, surf over speeding train carriages, snatch golden coins, jump barriers, slide under signs, and rack up arcade tickets!",
+    developer: "Reign",
     genre: "Endless Runner",
     themeColor: {
       primary: "#00f0ff",
@@ -78,8 +78,8 @@ export const GAMES: ArcadeGame[] = [
       bgAccent: "bg-cyan-400/10",
     },
     payout: "25 - 80 Tickets",
-    comingSoon: true,
-    cabinetArt: "🛹 🚆 🪙 💨 🚨",
+    comingSoon: false,
+    cabinetArt: "👽 🛹 🚆 🪙 💨",
   },
   {
     id: "balloon-pup",
