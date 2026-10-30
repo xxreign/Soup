@@ -7,7 +7,7 @@ import * as THREE from "three";
 import type { ScoreEntry } from "@/data/leaderboard";
 import type { ArcadeAction, ArcadeState, ControlId, ControlPresses } from "../arcadeMachine";
 import { CrtScreen } from "../screens/CrtScreen";
-import { BezelBottom, BezelTop, FrontPanel, Marquee, SummerSticker } from "../screens/CabinetArt";
+import { BezelBottom, BezelTop, FrontPanel, Marquee } from "../screens/CabinetArt";
 import { ArcadeButton, CONTROL_LAYOUT, DECK_DEPTH, DECK_WIDTH, Joystick, useDeckTexture } from "./Controls3D";
 
 /** Html content is authored at 1000 CSS px per world unit (distanceFactor / 400). */
@@ -137,10 +137,6 @@ export function Cabinet({
         <Marquee />
       </Html>
       <pointLight ref={marqueeLight} position={[0, 1.95, 0.55]} color="#4dff8a" distance={1.4} decay={2} intensity={0.9} />
-
-      <Html transform distanceFactor={PX} position={[0.43, 1.86, 0.26]} rotation={[0, 0, -0.16]} pointerEvents="none">
-        <SummerSticker />
-      </Html>
     </group>
   );
 }

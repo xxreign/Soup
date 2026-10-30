@@ -228,58 +228,6 @@ body {
 }
 @keyframes marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-.summer-sticker {
-  position: relative;
-  padding: 18px 20px 14px;
-  background: #ffd6d6;
-  border: 8px solid #fff;
-  border-radius: 10px;
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.45);
-  text-align: center;
-}
-.summer-sticker-word {
-  font-family: Impact, "Arial Black", system-ui, sans-serif;
-  font-size: 92px;
-  line-height: 0.86;
-  color: #ff2a2f;
-  -webkit-text-stroke: 10px #111;
-  paint-order: stroke fill;
-  letter-spacing: 2px;
-}
-.summer-sticker-tag {
-  margin-top: 10px;
-  font-family: system-ui, sans-serif;
-  font-weight: 900;
-  font-size: 22px;
-  letter-spacing: 0.08em;
-  color: #fff;
-  background: #111;
-  border-radius: 6px;
-  padding: 4px 8px;
-}
-.summer-sticker .tape {
-  position: absolute;
-  top: -22px;
-  width: 90px;
-  height: 34px;
-  background: rgba(235, 235, 225, 0.85);
-}
-.tape-left { left: -24px; transform: rotate(-32deg); }
-.tape-right { right: -24px; transform: rotate(32deg); }
-
-.wall-sticker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 18px 22px;
-  border: 7px solid #fff;
-  border-radius: 999px;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
-  text-align: center;
-  min-width: 150px;
-}
-
 .stamp {
   display: flex;
   flex-direction: column;
