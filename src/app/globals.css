@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+:root {
+  --background: #080811;
+  --foreground: #f0f4fc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-press-start), system-ui, -apple-system, sans-serif;
+}
+
+.font-pixel {
+  font-family: var(--font-press-start), monospace;
+}
+
+/* Neon glow text */
+.neon-glow-yellow {
+  text-shadow: 0 0 4px #ffe600, 0 0 12px rgba(255, 230, 0, 0.65);
+}
+.neon-glow-cyan {
+  text-shadow: 0 0 4px #00f0ff, 0 0 12px rgba(0, 240, 255, 0.65);
+}
+.neon-glow-pink {
+  text-shadow: 0 0 4px #ff007f, 0 0 12px rgba(255, 0, 127, 0.65);
+}
+.neon-glow-green {
+  text-shadow: 0 0 4px #39ff14, 0 0 12px rgba(57, 255, 20, 0.65);
+}
+
+/* Neon glow box effects */
+.neon-border-cyan {
+  border-color: #00f0ff;
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.25), inset 0 0 15px rgba(0, 240, 255, 0.08);
+}
+.neon-border-pink {
+  border-color: #ff007f;
+  box-shadow: 0 0 15px rgba(255, 0, 127, 0.25), inset 0 0 15px rgba(255, 0, 127, 0.08);
+}
+.neon-border-yellow {
+  border-color: #ffe600;
+  box-shadow: 0 0 15px rgba(255, 230, 0, 0.25), inset 0 0 15px rgba(255, 230, 0, 0.08);
+}
+.neon-border-green {
+  border-color: #39ff14;
+  box-shadow: 0 0 15px rgba(57, 255, 20, 0.25), inset 0 0 15px rgba(57, 255, 20, 0.08);
+}
+
+/* Arcade Floor Grid */
+.arcade-grid-bg {
+  background-image: 
+    linear-gradient(to right, rgba(0, 240, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 0, 127, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scanline Overlay for Arcade Screens */
+.crt-overlay {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.3) 50%
+  );
+  background-size: 100% 4px;
+}
+
+/* Retro flashing animation */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.15; }
+}
+
+.retro-blink {
+  animation: blink 1.2s infinite;
+}
