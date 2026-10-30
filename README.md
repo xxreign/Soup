@@ -1,6 +1,6 @@
 # 🕹️ Soup - Retro Arcade
 
-A retro-styled multiplayer/collaborative arcade web platform built with Next.js, TypeScript, and Tailwind CSS. Players play classic 8-bit arcade games (such as Pac-Man and Space Invaders), earn arcade tickets, and spend them on retro merchandise in the prize shop.
+A retro-styled multiplayer/collaborative arcade web platform inspired by the iconic *Invader Zim / Cupcake Attack* neon-grunge aesthetic. Built with Next.js, TypeScript, and Tailwind CSS. Players play classic arcade games (**Crossy Road**, **Flappy Bird**, **Minesweeper**, and **Subway Surfers**), earn arcade tickets, and spend them on prizes in the redemption vault.
 
 ---
 
