@@ -99,6 +99,24 @@ export const GAMES: ArcadeGame[] = [
     comingSoon: false,
     cabinetArt: "🐶 🎈 ▲",
   },
+  {
+    id: "zombie-hunter",
+    title: "ZOMBIE HUNTER",
+    subtitle: "Hold the Yard Till Dawn",
+    description: "A first-person 3D shooter. Hold off waves of walkers, runners, and brutes in a moonlit junkyard. Hold Shift to aim down sights and line up headshots!",
+    developer: "Sean",
+    genre: "3D Wave Shooter",
+    themeColor: {
+      primary: "#ef4444",
+      border: "border-red-500",
+      shadow: "shadow-[0_0_25px_rgba(239,68,68,0.55)]",
+      text: "text-red-500",
+      bgAccent: "bg-red-500/10",
+    },
+    payout: "2 - 80 Tickets",
+    comingSoon: false,
+    cabinetArt: "🧟 🔫 💀 🌕 🧟",
+  },
 ];
 
 export function getGameById(id: string): ArcadeGame | undefined {
