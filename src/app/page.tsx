@@ -1,29 +1,47 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { GAMES } from "@/data/games";
 import { MinesweeperSection } from "@/components/MinesweeperSection";
 import { GirMascot } from "@/components/GirMascot";
+import { CupcakeAttackPoster } from "@/components/CupcakeAttackPoster";
+import { ArcadeHome } from "@/components/arcade/ArcadeHome";
 
 export default function HomePage() {
+  const [viewMode, setViewMode] = useState<"poster" | "3d">("poster");
+
+  if (viewMode === "3d") {
+    return (
+      <div className="relative">
+        {/* Floating toggle back to poster view */}
+        <div className="absolute top-4 left-4 z-50">
+          <button
+            type="button"
+            onClick={() => setViewMode("poster")}
+            className="px-4 py-2 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-base font-bold shadow-[3px_3px_0_#ff0080] hover:bg-lime-300 transition-transform active:scale-95 cursor-pointer"
+          >
+            ← BACK TO CUPCAKE ATTACK POSTER
+          </button>
+        </div>
+        <ArcadeHome />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-16 pb-16">
       
       {/* ============================================================ */}
-      {/* 🧁 CUPCAKE ATTACK / INVADER ZIM HERO POSTER BANNER */}
+      {/* 🧁 CUPCAKE ATTACK HERO POSTER (EXACT LAYOUT FROM PICTURE) */}
       {/* ============================================================ */}
-      <section className="relative overflow-hidden rounded-3xl border-5 border-black bg-[#07010a] shadow-[10px_10px_0_#000] p-6 sm:p-10 lg:p-14">
+      <section className="relative flex flex-col items-center">
         
-        {/* Massive Ambient Airbrush Spray Gradients */}
-        <div className="absolute -top-20 -left-20 w-96 h-96 bg-[#ff0080]/30 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute top-1/2 -right-20 w-96 h-96 bg-[#a3e635]/25 rounded-full blur-[90px] pointer-events-none" />
-        <div className="absolute -bottom-20 left-1/3 w-80 h-80 bg-[#00e5ff]/20 rounded-full blur-[80px] pointer-events-none" />
-
-        {/* Main Content Layout */}
-        <div className="relative z-10 flex flex-col items-center text-center space-y-6">
-          
-          {/* Top Marquee Tag */}
-          <div className="inline-block transform -rotate-2 hover:rotate-0 transition-transform">
-            <span className="px-4 py-1.5 rounded-lg border-3 border-black bg-yellow-400 text-black font-comic text-lg sm:text-xl font-bold shadow-[4px_4px_0_#ff0080] tracking-wider uppercase">
-              ★ 100% UNHINGED RETRO ARCADE FLOOR ★
+        {/* Top Floating Badge & View Switcher */}
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+          <div className="inline-block transform -rotate-1 hover:rotate-0 transition-transform">
+            <span className="px-4 py-1.5 rounded-xl border-3 border-black bg-yellow-400 text-black font-comic text-base sm:text-lg font-bold shadow-[4px_4px_0_#ff0080] tracking-wider uppercase">
+              ★ SOUP RETRO ARCADE FLOOR • CUPCAKE ATTACK ★
             </span>
           </div>
 
@@ -99,46 +117,65 @@ export default function HomePage() {
                 WITH <strong className="text-white">DIB</strong> and <strong className="text-pink-400">THE ALMIGHTY TALLEST</strong>
               </span>
             </div>
+          <button
+            type="button"
+            onClick={() => setViewMode("3d")}
+            className="px-4 py-1.5 rounded-xl border-3 border-black bg-cyan-400 text-black font-comic text-base font-bold shadow-[3px_3px_0_#ff0080] hover:bg-cyan-300 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            🕹️ VIEW IN 3D CABINET ROOM →
+          </button>
+        </div>
 
-            <div className="text-[9px] font-mono tracking-widest text-pink-500/90 uppercase">
-              A TACOS TACOS UMM... TACOS!!! PRODUCTION • SOUP RETRO ARCADE
-            </div>
-          </div>
+        {/* The Exact Poster Composition (Text + Layout matching the photo) */}
+        <div className="w-full">
+          <CupcakeAttackPoster />
+        </div>
 
+        {/* Quick Action Bar Under Poster */}
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          <a
+            href="#cabinets"
+            className="px-6 py-2.5 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-lg font-bold shadow-[4px_4px_0_#ff0080] hover:bg-lime-300 transition-all hover:scale-105 active:scale-95"
+          >
+            🕹️ JUMP TO GAME CABINETS ↓
+          </a>
+          <Link
+            href="/shop"
+            className="px-6 py-2.5 rounded-xl border-3 border-black bg-pink-500 text-white font-comic text-lg font-bold shadow-[4px_4px_0_#a3e635] hover:bg-pink-400 transition-all hover:scale-105 active:scale-95"
+          >
+            🎁 VISIT PRIZE REDEMPTION SHOP →
+          </Link>
         </div>
       </section>
 
 
       {/* ============================================================ */}
-      {/* 🕹️ ARCADE CABINET FLOOR (4 GAMES) */}
+      {/* 🕹️ ARCADE CABINET FLOOR */}
       {/* ============================================================ */}
-      <section className="space-y-8">
+      <section id="cabinets" className="space-y-8 scroll-mt-24">
         
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b-4 border-black pb-4">
           <div>
             <div className="inline-block px-3 py-1 bg-lime-400 text-black border-2 border-black font-comic text-sm uppercase font-bold shadow-[2px_2px_0_#ff0080] -rotate-1 mb-2">
-              SELECT A MACHINE
+              SELECT YOUR MACHINE
             </div>
-            <h2 className="font-comic text-3xl sm:text-5xl font-black text-white tracking-wide text-stroke-black">
+            <h2 className="font-comic text-4xl sm:text-6xl font-black text-white tracking-wide text-stroke-black">
               ARCADE <span className="text-lime-400 neon-glow-lime">CABINETS</span>
             </h2>
             <p className="text-xs font-pixel text-gray-400">
-              Crossy Road • Flappy Bird • Minesweeper • Subway Surfers
+              Crossy Road • Flappy Bird • Minesweeper • Subway Surfers • Balloon Pup
             </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              href="/shop"
-              className="px-4 py-2 rounded-xl border-3 border-black bg-pink-500 text-white font-comic text-base shadow-[4px_4px_0_#a3e635] hover:bg-pink-400 transition-all hover:scale-105 active:scale-95"
-            >
-              🎁 VISIT PRIZE SHOP →
-            </Link>
+            <span className="font-comic text-base px-3 py-1.5 rounded-xl border-2 border-black bg-black text-yellow-300 shadow-[2px_2px_0_#ff0080]">
+              🎟️ {GAMES.length} CABINETS STANDING BY
+            </span>
           </div>
         </div>
 
-        {/* 4 Games Grid */}
+        {/* Games Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {GAMES.map((game, index) => (
             <div
@@ -150,7 +187,7 @@ export default function HomePage() {
               {/* Card Top Marquee */}
               <div className="p-3.5 bg-[#170524] border-b-3 border-black flex items-center justify-between">
                 <span className="font-comic text-sm text-lime-400 tracking-wide px-2 py-0.5 rounded bg-black border border-lime-400/50">
-                  SLOT #{index + 1}
+                  CABINET #{index + 1}
                 </span>
                 <span className="text-[9px] font-pixel font-bold px-2 py-0.5 rounded border border-pink-500 bg-pink-950/70 text-pink-300">
                   {game.developer}
@@ -171,10 +208,14 @@ export default function HomePage() {
                     {game.cabinetArt}
                   </div>
 
-                  {/* COMING SOON Sticker Badge */}
-                  {game.comingSoon && (
+                  {/* Status Badge */}
+                  {game.comingSoon ? (
                     <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-pink-500 text-white font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#000] retro-blink">
                       ★ COMING SOON ★
+                    </div>
+                  ) : (
+                    <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-lime-400 text-black font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#000]">
+                      ● PLAYABLE NOW ●
                     </div>
                   )}
                 </div>
@@ -243,7 +284,7 @@ export default function HomePage() {
         </div>
 
         <p className="text-xs font-pixel text-gray-300 leading-relaxed">
-          The 4 arcade machines are assigned to the team. Each teammate builds their game canvas inside their dedicated route:
+          The arcade machines are assigned to the team. Each teammate builds their game canvas inside their dedicated route:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
