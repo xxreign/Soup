@@ -5,12 +5,14 @@ import Link from "next/link";
 import { ArcadeGame } from "@/types/game";
 import { useTickets } from "@/context/TicketContext";
 import { MinesweeperGame } from "@/components/MinesweeperGame";
+import { GAME_COMPONENTS } from "@/games";
 
 interface GameClientViewProps {
   game: ArcadeGame;
 }
 
 export function GameClientView({ game }: GameClientViewProps) {
+  const PlayableGame = GAME_COMPONENTS[game.id];
   const { addTickets } = useTickets();
   const [ticketAwardMessage, setTicketAwardMessage] = useState<string | null>(null);
 
@@ -22,6 +24,9 @@ export function GameClientView({ game }: GameClientViewProps) {
       setTicketAwardMessage(null);
     }, 4000);
   };
+
+  // Playable games that have their own full layout (e.g. Balloon Pup)
+  if (PlayableGame) return <PlayableGame />;
 
   return (
     <div className="space-y-8 pb-12 max-w-5xl mx-auto">
