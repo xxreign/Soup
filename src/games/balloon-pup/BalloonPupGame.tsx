@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Faculty_Glyphic, IBM_Plex_Mono } from "next/font/google";
 import { useTickets } from "@/context/TicketContext";
-import { recordScore } from "@/data/leaderboard";
 import { mountBalloonPup, pupWallpaper } from "./engine";
 
 const facultyGlyphic = Faculty_Glyphic({ weight: "400", subsets: ["latin"] });
@@ -49,7 +48,6 @@ export function BalloonPupGame() {
       displayFont,
       monoFont,
       onGameOver: (score) => {
-        recordScore("balloon-pup", score);
         const reward = Math.min(score * TICKETS_PER_SPIKE, MAX_TICKETS_PER_RUN);
         if (reward <= 0) return;
         addTicketsRef.current(reward);
