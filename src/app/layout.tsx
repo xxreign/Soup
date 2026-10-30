@@ -4,6 +4,7 @@ import "./globals.css";
 import { TicketProvider } from "@/context/TicketContext";
 import { Header } from "@/components/Header";
 import { HideOnGameScreen } from "@/components/HideOnGameScreen";
+import { Agentation } from "agentation";
 
 const pressStart2P = localFont({
   src: "../fonts/PressStart2P-Regular.ttf",
@@ -57,6 +58,7 @@ export default function RootLayout({
             </HideOnGameScreen>
           </div>
         </TicketProvider>
+        {process.env.NODE_ENV === "development" && <Agentation />}
       </body>
     </html>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo, useSyncExternalStore } from "react";
 import { useTickets } from "@/context/TicketContext";
 
 export type Difficulty = "easy" | "medium" | "hard";
@@ -191,6 +191,38 @@ function play8BitSound(type: "click" | "flag" | "explode" | "win" | "chord", isM
   }
 }
 
+const BEST_TIMES_STORAGE_KEY = "minesweeper_best_times";
+const BEST_TIMES_EVENT = "minesweeper_best_times_updated";
+
+const DEFAULT_BEST_TIMES: Record<Difficulty, number | null> = {
+  easy: null,
+  medium: null,
+  hard: null,
+};
+
+function subscribeBestTimes(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("storage", callback);
+  window.addEventListener(BEST_TIMES_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(BEST_TIMES_EVENT, callback);
+  };
+}
+
+function getBestTimesSnapshot(): string {
+  if (typeof window === "undefined") return "";
+  try {
+    return localStorage.getItem(BEST_TIMES_STORAGE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function getServerBestTimesSnapshot(): string {
+  return "";
+}
+
 export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
   const { addTickets } = useTickets();
   const [difficulty, setDifficulty] = useState<Difficulty>("easy");
@@ -205,37 +237,39 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
   const [rewardNotice, setRewardNotice] = useState<string | null>(null);
   const [isPressing, setIsPressing] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [bestTimes, setBestTimes] = useState<Record<Difficulty, number | null>>(() => {
-    if (typeof window === "undefined") {
-      return { easy: null, medium: null, hard: null };
-    }
+
+  const rawBestTimes = useSyncExternalStore(subscribeBestTimes, getBestTimesSnapshot, getServerBestTimesSnapshot);
+  const bestTimes = useMemo<Record<Difficulty, number | null>>(() => {
+    if (!rawBestTimes) return DEFAULT_BEST_TIMES;
     try {
-      const stored = localStorage.getItem("minesweeper_best_times");
-      if (stored) {
-        return JSON.parse(stored);
-      }
+      return JSON.parse(rawBestTimes) as Record<Difficulty, number | null>;
     } catch {
-      // Ignore storage errors
+      return DEFAULT_BEST_TIMES;
     }
-    return { easy: null, medium: null, hard: null };
-  });
+  }, [rawBestTimes]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   const saveBestTime = useCallback((diff: Difficulty, time: number) => {
-    setBestTimes((prev) => {
-      const currentBest = prev[diff];
-      if (currentBest === null || time < currentBest) {
-        const updated = { ...prev, [diff]: time };
-        try {
-          localStorage.setItem("minesweeper_best_times", JSON.stringify(updated));
-        } catch {
-          // Ignore
-        }
-        return updated;
+    const current = (() => {
+      try {
+        const raw = localStorage.getItem(BEST_TIMES_STORAGE_KEY);
+        return raw ? (JSON.parse(raw) as Record<Difficulty, number | null>) : DEFAULT_BEST_TIMES;
+      } catch {
+        return DEFAULT_BEST_TIMES;
       }
-      return prev;
-    });
+    })();
+
+    const currentBest = current[diff];
+    if (currentBest === null || time < currentBest) {
+      const updated = { ...current, [diff]: time };
+      try {
+        localStorage.setItem(BEST_TIMES_STORAGE_KEY, JSON.stringify(updated));
+        window.dispatchEvent(new Event(BEST_TIMES_EVENT));
+      } catch {
+        // Ignore
+      }
+    }
   }, []);
 
   const resetGame = useCallback(() => {

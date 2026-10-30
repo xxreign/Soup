@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { GAMES } from "@/data/games";
 import { MinesweeperSection } from "@/components/MinesweeperSection";
-import { GirMascot } from "@/components/GirMascot";
 import { CupcakeAttackPoster } from "@/components/CupcakeAttackPoster";
 import { ArcadeHome } from "@/components/arcade/ArcadeHome";
 
@@ -45,78 +44,6 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* Title: CUPCAKE ATTACK */}
-          <div className="space-y-0 tracking-tight">
-            <div className="font-comic text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-lime-400 text-stroke-black leading-none drop-shadow-[0_0_25px_rgba(163,230,53,0.7)] transform -rotate-1">
-              CUPCAKE
-            </div>
-            <div className="font-comic text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black text-lime-400 text-stroke-black leading-none drop-shadow-[0_0_35px_rgba(255,0,128,0.85)] transform rotate-1">
-              ATTACK
-            </div>
-          </div>
-
-          {/* Poster Center Row: GIR Mascot + Catchphrases */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-12 gap-8 items-center pt-2">
-            
-            {/* Left Catchphrase / Arcade Pill */}
-            <div className="hidden md:flex md:col-span-3 flex-col items-end text-right space-y-4">
-              <div className="p-3.5 rounded-xl border-3 border-black bg-black/70 shadow-[4px_4px_0_#00e5ff] transform -rotate-3">
-                <div className="font-comic text-lg text-cyan-400 leading-tight">
-                  INSERT COIN
-                </div>
-                <div className="text-[9px] font-pixel text-gray-300">
-                  FREE PLAY FOR HUMANS
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-xl border-3 border-black bg-black/70 shadow-[4px_4px_0_#a3e635] transform rotate-2">
-                <div className="font-comic text-lg text-lime-400 leading-tight">
-                  4 FRESH GAMES
-                </div>
-                <div className="text-[9px] font-pixel text-gray-300">
-                  READY TO PLAY
-                </div>
-              </div>
-            </div>
-
-            {/* Center: The Iconic Screaming GIR Mascot */}
-            <div className="md:col-span-6 flex justify-center">
-              <GirMascot className="w-72 h-80 sm:w-88 sm:h-96" />
-            </div>
-
-            {/* Right: "THE MADNESS THE HORROR THE FROSTING" Catchphrase */}
-            <div className="md:col-span-3 flex flex-col items-center md:items-start text-center md:text-left space-y-1">
-              <div className="font-comic text-2xl sm:text-3xl lg:text-4xl font-extrabold text-lime-400 text-stroke-black-sm leading-tight drop-shadow-[0_0_12px_rgba(163,230,53,0.8)]">
-                THE MADNESS
-              </div>
-              <div className="font-comic text-2xl sm:text-3xl lg:text-4xl font-extrabold text-lime-400 text-stroke-black-sm leading-tight drop-shadow-[0_0_12px_rgba(163,230,53,0.8)]">
-                THE HORROR
-              </div>
-              <div className="font-comic text-2xl sm:text-3xl lg:text-4xl font-extrabold text-pink-500 text-stroke-black-sm leading-tight drop-shadow-[0_0_15px_rgba(255,0,128,0.9)]">
-                THE FROSTING
-              </div>
-              <div className="font-comic text-xl sm:text-2xl font-bold text-yellow-300 text-stroke-black-sm pt-2">
-                ...AND THE TICKETS!
-              </div>
-
-              <p className="text-[10px] font-pixel text-gray-400 pt-2 max-w-xs leading-relaxed">
-                Play games, conquer doom, rack up high scores, and spend tickets in the prize vault!
-              </p>
-            </div>
-
-          </div>
-
-          {/* Bottom Movie Poster Billing Strip */}
-          <div className="w-full pt-6 border-t-3 border-black/80 space-y-2">
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-comic text-sm sm:text-base tracking-wide">
-              <span className="text-pink-400">
-                STARRING: <strong className="text-white">GIR AND ZIM</strong> AS THE INVADERS
-              </span>
-              <span className="text-gray-500">•</span>
-              <span className="text-lime-400">
-                WITH <strong className="text-white">DIB</strong> and <strong className="text-pink-400">THE ALMIGHTY TALLEST</strong>
-              </span>
-            </div>
           <button
             type="button"
             onClick={() => setViewMode("3d")}
@@ -247,6 +174,7 @@ export default function HomePage() {
               <div className="p-4 pt-0">
                 <Link
                   href={`/games/${game.id}`}
+                  prefetch={true}
                   className="w-full py-3 px-4 rounded-xl font-comic text-lg font-bold text-center flex items-center justify-center gap-2 border-3 border-black bg-lime-400 hover:bg-pink-500 hover:text-white text-black shadow-[3px_3px_0_#000] hover:shadow-[4px_4px_0_#a3e635] transition-all duration-150 active:translate-x-0.5 active:translate-y-0.5"
                 >
                   <span>🕹️</span>

@@ -64,6 +64,19 @@ export function ArcadeHome() {
   const presses = useRef<ControlPresses>({});
   const screenChangedAt = useRef(0);
 
+  // Preload playable games so navigation is instant
+  useEffect(() => {
+    router.prefetch("/games/balloon-pup");
+    router.prefetch("/games/minesweeper");
+  }, [router]);
+
+  useEffect(() => {
+    const item = MENU_ITEMS[state.menuIndex];
+    if (item.kind === "game" && !item.game.comingSoon) {
+      router.prefetch(`/games/${item.game.id}`);
+    }
+  }, [state.menuIndex, router]);
+
   const commit = useCallback((next: ArcadeState) => {
     if (next === stateRef.current) return;
     stateRef.current = next;

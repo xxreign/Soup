@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { useTickets } from "@/context/TicketContext";
 import { recordScore } from "@/data/leaderboard";
 import { mountBalloonPup, pupWallpaper } from "./engine";
@@ -32,7 +33,12 @@ export function BalloonPupGame() {
 
     const sprite = new Image();
     sprite.onload = () => {
-      if (backdropRef.current) backdropRef.current.style.backgroundImage = `url(${pupWallpaper(160, sprite)})`;
+      // Defer wallpaper application so the canvas initializes and starts immediately
+      setTimeout(() => {
+        if (backdropRef.current) {
+          backdropRef.current.style.backgroundImage = `url(${pupWallpaper(160, sprite)})`;
+        }
+      }, 0);
     };
     sprite.src = CHARACTER_SRC;
 
@@ -65,8 +71,29 @@ export function BalloonPupGame() {
       className="relative w-screen h-screen overflow-hidden flex items-center justify-center bg-[#070b16] select-none"
       style={{ backgroundSize: "160px 160px" }}
     >
-      <div className="relative shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black">
-        <canvas ref={canvasRef} className="block cursor-pointer touch-none" />
+      {/* Top Left Navigation Back to Arcade */}
+      <div className="absolute top-4 left-4 z-50">
+        <Link
+          href="/"
+          className="px-4 py-2 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-sm font-bold shadow-[3px_3px_0_#ff0080] hover:bg-lime-300 transition-all hover:scale-105 active:scale-95"
+        >
+          ← BACK TO ARCADE
+        </Link>
+      </div>
+
+      <div
+        className="relative shadow-2xl rounded-2xl overflow-hidden border border-white/10 bg-black"
+        style={{
+          width: "min(100vw - 32px, calc((100dvh - 48px) * 0.68))",
+          maxWidth: 440,
+          aspectRatio: "0.68",
+        }}
+      >
+        <canvas
+          ref={canvasRef}
+          tabIndex={0}
+          className="block cursor-pointer touch-none w-full h-full"
+        />
         {award && (
           <div className="pointer-events-none absolute top-4 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-[#f5b400] text-black font-black text-sm tracking-widest shadow-lg animate-bounce">
             🎟️ {award}
