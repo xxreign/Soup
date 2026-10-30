@@ -1,8 +1,33 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { GAMES } from "@/data/games";
+import { MinesweeperSection } from "@/components/MinesweeperSection";
 import { CupcakeAttackPoster } from "@/components/CupcakeAttackPoster";
+import { ArcadeHome } from "@/components/arcade/ArcadeHome";
 
 export default function HomePage() {
+  const [viewMode, setViewMode] = useState<"poster" | "3d">("poster");
+
+  if (viewMode === "3d") {
+    return (
+      <div className="relative">
+        {/* Floating toggle back to poster view */}
+        <div className="absolute top-4 left-4 z-50">
+          <button
+            type="button"
+            onClick={() => setViewMode("poster")}
+            className="px-4 py-2 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-base font-bold shadow-[3px_3px_0_#ff0080] hover:bg-lime-300 transition-transform active:scale-95 cursor-pointer"
+          >
+            ← BACK TO CUPCAKE ATTACK POSTER
+          </button>
+        </div>
+        <ArcadeHome />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-16 pb-16">
       
@@ -11,20 +36,30 @@ export default function HomePage() {
       {/* ============================================================ */}
       <section className="relative flex flex-col items-center">
         
-        {/* Top Floating Badge */}
-        <div className="mb-4 inline-block transform -rotate-1 hover:rotate-0 transition-transform">
-          <span className="px-4 py-1.5 rounded-xl border-3 border-black bg-yellow-400 text-black font-comic text-base sm:text-lg font-bold shadow-[4px_4px_0_#ff0080] tracking-wider uppercase">
-            ★ SOUP RETRO ARCADE FLOOR • INSERT COIN TO PLAY ★
-          </span>
+        {/* Top Floating Badge & View Switcher */}
+        <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+          <div className="inline-block transform -rotate-1 hover:rotate-0 transition-transform">
+            <span className="px-4 py-1.5 rounded-xl border-3 border-black bg-yellow-400 text-black font-comic text-base sm:text-lg font-bold shadow-[4px_4px_0_#ff0080] tracking-wider uppercase">
+              ★ SOUP RETRO ARCADE FLOOR • CUPCAKE ATTACK ★
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setViewMode("3d")}
+            className="px-4 py-1.5 rounded-xl border-3 border-black bg-cyan-400 text-black font-comic text-base font-bold shadow-[3px_3px_0_#ff0080] hover:bg-cyan-300 transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          >
+            🕹️ VIEW IN 3D CABINET ROOM →
+          </button>
         </div>
 
-        {/* The Exact Poster Composition */}
+        {/* The Exact Poster Composition (Text + Layout matching the photo) */}
         <div className="w-full">
           <CupcakeAttackPoster />
         </div>
 
         {/* Quick Action Bar Under Poster */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
           <a
             href="#cabinets"
             className="px-6 py-2.5 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-lg font-bold shadow-[4px_4px_0_#ff0080] hover:bg-lime-300 transition-all hover:scale-105 active:scale-95"
@@ -42,7 +77,7 @@ export default function HomePage() {
 
 
       {/* ============================================================ */}
-      {/* 🕹️ ARCADE CABINET FLOOR (4 GAMES) */}
+      {/* 🕹️ ARCADE CABINET FLOOR */}
       {/* ============================================================ */}
       <section id="cabinets" className="space-y-8 scroll-mt-24">
         
@@ -56,18 +91,18 @@ export default function HomePage() {
               ARCADE <span className="text-lime-400 neon-glow-lime">CABINETS</span>
             </h2>
             <p className="text-xs font-pixel text-gray-400">
-              Crossy Road • Flappy Bird • Minesweeper • Subway Surfers
+              Crossy Road • Flappy Bird • Minesweeper • Subway Surfers • Balloon Pup
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             <span className="font-comic text-base px-3 py-1.5 rounded-xl border-2 border-black bg-black text-yellow-300 shadow-[2px_2px_0_#ff0080]">
-              🎟️ 4 CABINETS STANDING BY
+              🎟️ {GAMES.length} CABINETS STANDING BY
             </span>
           </div>
         </div>
 
-        {/* 4 Games Grid */}
+        {/* Games Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {GAMES.map((game, index) => (
             <div
@@ -100,14 +135,14 @@ export default function HomePage() {
                     {game.cabinetArt}
                   </div>
 
-                  {/* COMING SOON / READY TO PLAY Sticker Badge */}
+                  {/* Status Badge */}
                   {game.comingSoon ? (
                     <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-pink-500 text-white font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#000] retro-blink">
                       ★ COMING SOON ★
                     </div>
                   ) : (
-                    <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-lime-400 text-black font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#ff0080] font-black animate-pulse">
-                      ★ READY TO PLAY ★
+                    <div className="mt-1 inline-block px-3 py-1 rounded border-2 border-black bg-lime-400 text-black font-comic text-xs tracking-wider uppercase transform -rotate-3 shadow-[2px_2px_0_#000]">
+                      ● PLAYABLE NOW ●
                     </div>
                   )}
                 </div>
@@ -158,6 +193,8 @@ export default function HomePage() {
 
       </section>
 
+      {/* Featured Minesweeper Section */}
+      <MinesweeperSection />
 
       {/* ============================================================ */}
       {/* 🛠️ TEAMMATE ARCADE DEV GUIDE (MISSION BRIEFING) */}
@@ -174,7 +211,7 @@ export default function HomePage() {
         </div>
 
         <p className="text-xs font-pixel text-gray-300 leading-relaxed">
-          The 4 arcade machines are assigned to the team. Each teammate builds their game canvas inside their dedicated route:
+          The arcade machines are assigned to the team. Each teammate builds their game canvas inside their dedicated route:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
@@ -196,14 +233,14 @@ export default function HomePage() {
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#facc15] space-y-2">
             <div className="font-comic text-lg text-yellow-400">3. Minesweeper</div>
             <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
-              Assigned to <strong>Teammate 3</strong>. Route: <code className="text-yellow-300">/games/minesweeper</code>
+              Assigned to <strong>Letian</strong>. Route: <code className="text-yellow-300">/games/minesweeper</code>
             </p>
           </div>
 
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#00e5ff] space-y-2">
             <div className="font-comic text-lg text-cyan-400">4. Subway Surfers</div>
             <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
-              Built by <strong>Reign</strong>. Route: <code className="text-yellow-300">/games/subway-surfers</code>
+              Assigned to <strong>Teammate 4</strong>. Route: <code className="text-yellow-300">/games/subway-surfers</code>
             </p>
           </div>
 
