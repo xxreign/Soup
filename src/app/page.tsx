@@ -26,7 +26,7 @@ export default function HomePage() {
 
           <div className="pt-2 flex flex-wrap items-center justify-center gap-4 text-[10px] text-gray-400">
             <span className="flex items-center gap-1.5 border border-gray-800 bg-gray-900/60 px-3 py-1.5 rounded">
-              <span className="text-cyan-400">●</span> 3 CABINETS READY
+              <span className="text-cyan-400">●</span> {GAMES.length} CABINETS READY
             </span>
             <span className="flex items-center gap-1.5 border border-gray-800 bg-gray-900/60 px-3 py-1.5 rounded">
               <span className="text-yellow-400">🎟️</span> WIN REAL TICKETS

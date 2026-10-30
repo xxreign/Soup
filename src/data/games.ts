@@ -64,6 +64,24 @@ export const GAMES: ArcadeGame[] = [
     comingSoon: true,
     cabinetArt: "▲  ☄️  💥",
   },
+  {
+    id: "crossy-road",
+    title: "INVADER ZIM: CROSSY ROAD",
+    subtitle: "Alien Highway Domination",
+    description: "Guide Invader Zim across chaotic human highways, turbulent rivers, and high-speed train tracks! Collect coins and earn tickets for almighty Earth conquest!",
+    developer: "Carnycia",
+    genre: "Endless Hopper",
+    themeColor: {
+      primary: "#39ff14",
+      border: "border-green-400",
+      shadow: "shadow-[0_0_25px_rgba(57,255,20,0.5)]",
+      text: "text-green-400",
+      bgAccent: "bg-green-400/10",
+    },
+    payout: "20 - 100 Tickets",
+    comingSoon: false,
+    cabinetArt: "👽  🚗  🛸",
+  },
 ];
 
 export function getGameById(id: string): ArcadeGame | undefined {
