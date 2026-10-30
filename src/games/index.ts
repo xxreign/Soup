@@ -1,5 +1,6 @@
 import type { ComponentType } from "react";
 import { BalloonPupGame } from "./balloon-pup/BalloonPupGame";
+import { ZombieHunterGame } from "./zombie-hunter/ZombieHunterGame";
 
 /**
  * Playable game components, keyed by the `id` in `src/data/games.ts`.
@@ -7,4 +8,5 @@ import { BalloonPupGame } from "./balloon-pup/BalloonPupGame";
  */
 export const GAME_COMPONENTS: Record<string, ComponentType> = {
   "balloon-pup": BalloonPupGame,
+  "zombie-hunter": ZombieHunterGame,
 };
