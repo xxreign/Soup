@@ -86,11 +86,11 @@ export function MinesweeperSection() {
                 <span className="text-yellow-400 font-bold">+30 🎟️</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-black/40 border border-gray-800">
-                <span className="text-gray-300">MEDIUM (50x50, 350 Mines)</span>
+                <span className="text-gray-300">MEDIUM (16x16, 50 Mines)</span>
                 <span className="text-yellow-400 font-bold">+60 🎟️</span>
               </div>
               <div className="flex items-center justify-between p-2 rounded bg-black/40 border border-gray-800">
-                <span className="text-gray-300">EXPERT (99x99, 1400 Mines)</span>
+                <span className="text-gray-300">EXPERT (16x30, 99 Mines)</span>
                 <span className="text-yellow-400 font-bold">+100 🎟️</span>
               </div>
             </div>
