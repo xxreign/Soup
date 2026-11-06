@@ -8,19 +8,19 @@ import { CupcakeAttackPoster } from "@/components/CupcakeAttackPoster";
 import { ArcadeHome } from "@/components/arcade/ArcadeHome";
 
 export default function HomePage() {
-  const [viewMode, setViewMode] = useState<"poster" | "3d">("poster");
+  const [viewMode, setViewMode] = useState<"poster" | "3d">("3d");
 
   if (viewMode === "3d") {
     return (
       <div className="relative">
-        {/* Floating toggle back to poster view */}
+        {/* Floating toggle to poster view */}
         <div className="absolute top-4 left-4 z-50">
           <button
             type="button"
             onClick={() => setViewMode("poster")}
             className="px-4 py-2 rounded-xl border-3 border-black bg-lime-400 text-black font-comic text-base font-bold shadow-[3px_3px_0_#ff0080] hover:bg-lime-300 transition-transform active:scale-95 cursor-pointer"
           >
-            ← BACK TO CUPCAKE ATTACK POSTER
+            VIEW CUPCAKE ATTACK POSTER
           </button>
         </div>
         <ArcadeHome />
