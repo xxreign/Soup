@@ -207,7 +207,7 @@ export function GameClientView({ game }: GameClientViewProps) {
               <span>DYNAMIC TICKET SCALING</span>
             </div>
             <p className="text-gray-400 font-mono text-[9px] leading-relaxed">
-              Beginner yields 30🎟️, Intermediate 50🎟️, Expert defuses yield the full 80🎟️ jackpot payout!
+              Beginner yields 30🎟️, Intermediate 60🎟️, Expert defuses yield the full 100🎟️ jackpot payout!
             </p>
           </div>
 

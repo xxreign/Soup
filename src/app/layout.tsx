@@ -26,7 +26,7 @@ const creepster = localFont({
 
 export const metadata: Metadata = {
   title: "CUPCAKE ATTACK | Soup Retro Arcade",
-  description: "Crossy Road, Flappy Bird, Minesweeper, Subway Surfers - play games and win tickets!",
+  description: "Crossy Road, Minesweeper, Subway Surfers - play games and win tickets!",
 };
 
 export default function RootLayout({
@@ -57,7 +57,7 @@ export default function RootLayout({
                     A TACOS TACOS PRODUCTION • 4 CABINETS STANDING BY • EARN TICKETS FOR THE PRIZE VAULT
                   </p>
                   <div className="text-[9px] text-gray-500 font-pixel">
-                    CROSSY ROAD • FLAPPY BIRD • MINESWEEPER • SUBWAY SURFERS
+                    CROSSY ROAD • MINESWEEPER • SUBWAY SURFERS
                   </div>
                 </div>
               </footer>

@@ -2,18 +2,27 @@
 
 import React from "react";
 
-export function GirMascot({ className = "w-72 h-80" }: { className?: string }) {
+export function GirMascot({
+  className = "w-72 h-80",
+  showHalo = true,
+}: {
+  className?: string;
+  showHalo?: boolean;
+}) {
   return (
     <div className={`relative flex items-center justify-center select-none ${className}`}>
-      
-      {/* Massive Hot Pink Airbrush Spray Halo behind GIR */}
-      <div className="absolute inset-0 bg-[#ff0080]/35 rounded-full blur-2xl transform scale-110 pointer-events-none" />
-      <div className="absolute -top-4 -right-4 w-28 h-28 bg-[#a3e635]/25 rounded-full blur-xl pointer-events-none" />
+      {showHalo && (
+        <>
+          {/* Massive Hot Pink Airbrush Spray Halo behind GIR */}
+          <div className="absolute inset-0 bg-[#ff0080]/35 rounded-full blur-2xl transform scale-110 pointer-events-none" />
+          <div className="absolute -top-4 -right-4 w-28 h-28 bg-[#a3e635]/25 rounded-full blur-xl pointer-events-none" />
+        </>
+      )}
 
       {/* SVG Cartoon Character */}
       <svg
         viewBox="0 0 360 400"
-        className="w-full h-full overflow-visible drop-shadow-[0_0_25px_rgba(255,0,128,0.7)]"
+        className={`w-full h-full overflow-visible ${showHalo ? "drop-shadow-[0_0_25px_rgba(255,0,128,0.7)]" : ""}`}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -46,32 +55,34 @@ export function GirMascot({ className = "w-72 h-80" }: { className?: string }) {
         </defs>
 
         {/* --- Background Spray Splatters & Particles --- */}
-        <g opacity="0.9">
-          {/* Main spray cloud */}
-          <ellipse cx="180" cy="200" rx="160" ry="170" fill="url(#sprayPink)" />
-          
-          {/* Splatter dots around character */}
-          <circle cx="50" cy="90" r="5" fill="#ff0080" />
-          <circle cx="35" cy="115" r="3" fill="#ff0080" />
-          <circle cx="70" cy="65" r="7" fill="#ff0080" />
-          <circle cx="85" cy="50" r="4" fill="#ff0080" />
-          <circle cx="310" cy="120" r="6" fill="#ff0080" />
-          <circle cx="330" cy="140" r="4" fill="#ff0080" />
-          <circle cx="320" cy="90" r="8" fill="#ff0080" />
-          <circle cx="280" cy="45" r="5" fill="#ff0080" />
-          <circle cx="40" cy="240" r="9" fill="#ff0080" />
-          <circle cx="25" cy="270" r="4" fill="#ff0080" />
-          <circle cx="65" cy="300" r="6" fill="#ff0080" />
-          <circle cx="320" cy="280" r="8" fill="#ff0080" />
-          <circle cx="340" cy="310" r="5" fill="#ff0080" />
-          
-          {/* Toxic lime splatter specks */}
-          <circle cx="45" cy="140" r="3" fill="#a3e635" />
-          <circle cx="305" cy="70" r="4" fill="#a3e635" />
-          <circle cx="75" cy="340" r="5" fill="#a3e635" />
-          <circle cx="290" cy="330" r="4" fill="#a3e635" />
-          <circle cx="180" cy="25" r="5" fill="#a3e635" />
-        </g>
+        {showHalo && (
+          <g opacity="0.9">
+            {/* Main spray cloud */}
+            <ellipse cx="180" cy="200" rx="160" ry="170" fill="url(#sprayPink)" />
+            
+            {/* Splatter dots around character */}
+            <circle cx="50" cy="90" r="5" fill="#ff0080" />
+            <circle cx="35" cy="115" r="3" fill="#ff0080" />
+            <circle cx="70" cy="65" r="7" fill="#ff0080" />
+            <circle cx="85" cy="50" r="4" fill="#ff0080" />
+            <circle cx="310" cy="120" r="6" fill="#ff0080" />
+            <circle cx="330" cy="140" r="4" fill="#ff0080" />
+            <circle cx="320" cy="90" r="8" fill="#ff0080" />
+            <circle cx="280" cy="45" r="5" fill="#ff0080" />
+            <circle cx="40" cy="240" r="9" fill="#ff0080" />
+            <circle cx="25" cy="270" r="4" fill="#ff0080" />
+            <circle cx="65" cy="300" r="6" fill="#ff0080" />
+            <circle cx="320" cy="280" r="8" fill="#ff0080" />
+            <circle cx="340" cy="310" r="5" fill="#ff0080" />
+            
+            {/* Toxic lime splatter specks */}
+            <circle cx="45" cy="140" r="3" fill="#a3e635" />
+            <circle cx="305" cy="70" r="4" fill="#a3e635" />
+            <circle cx="75" cy="340" r="5" fill="#a3e635" />
+            <circle cx="290" cy="330" r="4" fill="#a3e635" />
+            <circle cx="180" cy="25" r="5" fill="#a3e635" />
+          </g>
+        )}
 
         {/* --- GIR Body --- */}
         <g stroke="#000" strokeWidth="5" strokeLinejoin="round" strokeLinecap="round">

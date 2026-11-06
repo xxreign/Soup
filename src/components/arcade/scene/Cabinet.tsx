@@ -7,7 +7,7 @@ import * as THREE from "three";
 import type { ScoreEntry } from "@/data/leaderboard";
 import type { ArcadeAction, ArcadeState, ControlId, ControlPresses } from "../arcadeMachine";
 import { CrtScreen } from "../screens/CrtScreen";
-import { BezelBottom, BezelTop, FrontPanel, Marquee, SummerSticker } from "../screens/CabinetArt";
+import { BezelBottom, BezelTop, FrontPanel, Marquee } from "../screens/CabinetArt";
 import { ArcadeButton, CONTROL_LAYOUT, DECK_DEPTH, DECK_WIDTH, Joystick, useDeckTexture } from "./Controls3D";
 
 /** Html content is authored at 1000 CSS px per world unit (distanceFactor / 400). */
@@ -83,14 +83,14 @@ export function Cabinet({
 
   return (
     <group>
-      {/* Glossy black shell */}
-      <mesh geometry={side} material={glossBlack} position={[INNER_WIDTH / 2 + SIDE_THICKNESS, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
-      <mesh geometry={side} material={glossBlack} position={[-INNER_WIDTH / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
-      <Box size={[INNER_WIDTH, 2.16, 0.45]} position={[0, 1.08, -0.175]} material={glossBlack} />
-      <Box size={[INNER_WIDTH, 0.06, 0.6]} position={[0, 2.13, -0.1]} material={glossBlack} />
+      {/* Glossy pink shell */}
+      <mesh geometry={side} material={glossPink} position={[INNER_WIDTH / 2 + SIDE_THICKNESS, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+      <mesh geometry={side} material={glossPink} position={[-INNER_WIDTH / 2, 0, 0]} rotation={[0, -Math.PI / 2, 0]} />
+      <Box size={[INNER_WIDTH, 2.16, 0.45]} position={[0, 1.08, -0.175]} material={glossPink} />
+      <Box size={[INNER_WIDTH, 0.06, 0.6]} position={[0, 2.13, -0.1]} material={glossPink} />
 
       {/* Lower front: info panel + coin door */}
-      <Box size={[INNER_WIDTH, 0.92, 0.04]} position={[0, 0.49, 0.28]} material={glossBlack} />
+      <Box size={[INNER_WIDTH, 0.92, 0.04]} position={[0, 0.49, 0.28]} material={glossPink} />
       <Box size={[INNER_WIDTH, 0.06, 0.05]} position={[0, 0.03, 0.29]} material={satinBlack} />
       <Html transform distanceFactor={PX} position={[0, 0.76, 0.302]}>
         <FrontPanel tickets={tickets} onPrizeCounter={onPrizeCounter} />
@@ -98,7 +98,7 @@ export function Cabinet({
       <CoinDoor />
 
       {/* Control panel */}
-      <Box size={[INNER_WIDTH, 0.13, 0.14]} position={[0, 1.005, 0.37]} material={glossBlack} />
+      <Box size={[INNER_WIDTH, 0.13, 0.14]} position={[0, 1.005, 0.37]} material={glossPink} />
       <Box size={[INNER_WIDTH + 0.004, 0.012, 0.012]} position={[0, 1.068, 0.442]} material={chrome} />
       <group position={[0, 1.13, 0.295]} rotation={[Math.atan2(0.12, 0.29), 0, 0]}>
         <Box size={[INNER_WIDTH, 0.02, DECK_DEPTH]} position={[0, -0.01, 0]} material={satinBlack} />
@@ -117,7 +117,7 @@ export function Cabinet({
 
       {/* Screen bezel, tilted back like a real cabinet */}
       <group position={[0, 1.475, 0.105]} rotation={[-Math.atan2(0.09, 0.57), 0, 0]}>
-        <Box size={[INNER_WIDTH, 0.578, 0.03]} position={[0, 0, -0.015]} material={glossBlack} />
+        <Box size={[INNER_WIDTH, 0.578, 0.03]} position={[0, 0, -0.015]} material={glossPink} />
         <Html transform distanceFactor={PX} position={[0, 0, 0.002]}>
           <div className="flex flex-col items-center bg-[#08080c]" style={{ width: 940, height: 578 }}>
             <BezelTop />
@@ -131,16 +131,12 @@ export function Cabinet({
       </group>
 
       {/* Overhang and marquee */}
-      <Box size={[INNER_WIDTH, 0.05, 0.15]} position={[0, 1.785, 0.13]} material={glossBlack} />
-      <Box size={[INNER_WIDTH, 0.3, 0.03]} position={[0, 1.95, 0.185]} material={glossBlack} />
+      <Box size={[INNER_WIDTH, 0.05, 0.15]} position={[0, 1.785, 0.13]} material={glossPink} />
+      <Box size={[INNER_WIDTH, 0.3, 0.03]} position={[0, 1.95, 0.185]} material={glossPink} />
       <Html transform distanceFactor={PX} position={[0, 1.95, 0.202]}>
         <Marquee />
       </Html>
       <pointLight ref={marqueeLight} position={[0, 1.95, 0.55]} color="#4dff8a" distance={1.4} decay={2} intensity={0.9} />
-
-      <Html transform distanceFactor={PX} position={[0.43, 1.86, 0.26]} rotation={[0, 0, -0.16]} pointerEvents="none">
-        <SummerSticker />
-      </Html>
     </group>
   );
 }
@@ -179,8 +175,8 @@ function Box({
   );
 }
 
-const glossBlack = new THREE.MeshPhysicalMaterial({
-  color: "#0c0c12",
+const glossPink = new THREE.MeshPhysicalMaterial({
+  color: "#f34c98",
   roughness: 0.22,
   metalness: 0.1,
   clearcoat: 1,

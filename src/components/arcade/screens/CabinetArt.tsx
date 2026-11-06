@@ -74,25 +74,3 @@ export function FrontPanel({ tickets, onPrizeCounter }: { tickets: number; onPri
     </div>
   );
 }
-
-export function SummerSticker() {
-  return (
-    <div className="summer-sticker" style={{ width: 300 }}>
-      <span className="tape tape-left" />
-      <span className="tape tape-right" />
-      <div className="summer-sticker-word">SUM</div>
-      <div className="summer-sticker-word">MER</div>
-      <div className="summer-sticker-tag">ARCADE NIGHTS</div>
-    </div>
-  );
-}
-
-export function WallSticker({ emoji, line1, line2, tone }: { emoji: string; line1: string; line2?: string; tone: string }) {
-  return (
-    <div className="wall-sticker" style={{ background: tone }}>
-      <span className="text-[56px] leading-none">{emoji}</span>
-      <span className="font-sans font-black text-[22px] leading-none text-[#1b1b2f]">{line1}</span>
-      {line2 && <span className="font-sans font-black text-[16px] leading-none text-[#1b1b2f]/80">{line2}</span>}
-    </div>
-  );
-}

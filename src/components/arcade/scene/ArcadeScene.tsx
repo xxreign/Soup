@@ -65,18 +65,18 @@ export default function ArcadeScene({ view, reducedMotion, fallback, ...cabinet 
       gl={{ antialias: true }}
       fallback={fallback}
     >
-      <color attach="background" args={["#0a1650"]} />
-      <fog attach="fog" args={["#0a1650", 7, 15]} />
+      <color attach="background" args={["#24341a"]} />
+      <fog attach="fog" args={["#24341a", 7, 15]} />
 
-      <hemisphereLight args={["#7fb2ff", "#0a0f2a", 0.7]} />
+      <hemisphereLight args={["#fff4dc", "#1b2914", 0.7]} />
       <directionalLight position={[-2.5, 4, 3]} intensity={1.6} color="#ffffff" />
-      <directionalLight position={[3, 2.5, 2]} intensity={0.6} color="#9fc4ff" />
-      <pointLight position={[0, 2.4, -0.9]} intensity={6} distance={4} color="#3d7bff" />
+      <directionalLight position={[3, 2.5, 2]} intensity={0.6} color="#ffd3e6" />
+      <pointLight position={[0, 2.4, -0.9]} intensity={6} distance={4} color="#c8ed62" />
 
       {/* Studio light panels, only seen in reflections on the glossy cabinet. */}
       <Environment resolution={256} frames={1}>
         <Lightformer form="rect" intensity={3} position={[0, 4, 2]} scale={[6, 1.2, 1]} rotation-x={Math.PI / 2} />
-        <Lightformer form="rect" intensity={2} color="#4f8bff" position={[-4, 1.5, 1]} scale={[3, 3, 1]} rotation-y={Math.PI / 2} />
+        <Lightformer form="rect" intensity={2} color="#f98cbd" position={[-4, 1.5, 1]} scale={[3, 3, 1]} rotation-y={Math.PI / 2} />
         <Lightformer form="rect" intensity={2} color="#ff4f6d" position={[4, 1.5, 1]} scale={[3, 3, 1]} rotation-y={-Math.PI / 2} />
         <Lightformer form="ring" intensity={1.5} color="#5ff6ff" position={[0, 1.5, 4]} scale={2} />
       </Environment>

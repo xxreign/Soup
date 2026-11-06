@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo, useSyncExternalStore } from "react";
 import { useTickets } from "@/context/TicketContext";
+import { GirMascot } from "@/components/GirMascot";
 
 export type Difficulty = "easy" | "medium" | "hard";
 
@@ -14,9 +15,9 @@ interface DifficultyConfig {
 }
 
 const CONFIGS: Record<Difficulty, DifficultyConfig> = {
-  easy: { name: "EASY", rows: 8, cols: 8, mines: 10, reward: 30 },
-  medium: { name: "MEDIUM", rows: 10, cols: 10, mines: 18, reward: 50 },
-  hard: { name: "EXPERT", rows: 12, cols: 12, mines: 30, reward: 80 },
+  easy: { name: "EASY", rows: 10, cols: 10, mines: 18, reward: 30 },
+  medium: { name: "MEDIUM", rows: 16, cols: 16, mines: 50, reward: 60 },
+  hard: { name: "EXPERT", rows: 16, cols: 30, mines: 99, reward: 100 },
 };
 
 interface Cell {
@@ -98,20 +99,44 @@ function generateMines(startR: number, startC: number, cfg: DifficultyConfig): C
   // Calculate neighbor counts
   for (let r = 0; r < cfg.rows; r++) {
     for (let c = 0; c < cfg.cols; c++) {
-      if (newBoard[r][c].isMine) continue;
-      let count = 0;
-      for (const [dr, dc] of DIRECTIONS) {
-        const nr = r + dr;
-        const nc = c + dc;
-        if (nr >= 0 && nr < cfg.rows && nc >= 0 && nc < cfg.cols && newBoard[nr][nc].isMine) {
-          count++;
+      if (newBoard[r][c].isMine) {
+        for (const [dr, dc] of DIRECTIONS) {
+          const nr = r + dr;
+          const nc = c + dc;
+          if (nr >= 0 && nr < cfg.rows && nc >= 0 && nc < cfg.cols) {
+            newBoard[nr][nc].neighborMines++;
+          }
         }
       }
-      newBoard[r][c].neighborMines = count;
     }
   }
 
   return newBoard;
+}
+
+function getTileDimensions(difficulty: Difficulty, compact: boolean) {
+  if (difficulty === "hard") {
+    return {
+      size: 24,
+      sizeStr: "24px",
+      fontSize: "text-[10px] sm:text-xs",
+      iconSize: "text-xs sm:text-sm",
+    };
+  }
+  if (difficulty === "medium") {
+    return {
+      size: 26,
+      sizeStr: "26px",
+      fontSize: "text-xs sm:text-sm",
+      iconSize: "text-sm",
+    };
+  }
+  return {
+    size: compact ? 32 : 36,
+    sizeStr: compact ? "32px" : "36px",
+    fontSize: "text-xs sm:text-sm",
+    iconSize: "text-base",
+  };
 }
 
 // Web Audio API Retro Sound FX Generator
@@ -200,6 +225,8 @@ const DEFAULT_BEST_TIMES: Record<Difficulty, number | null> = {
   hard: null,
 };
 
+const ZOOM_LEVELS = [1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0];
+
 function subscribeBestTimes(callback: () => void) {
   if (typeof window === "undefined") return () => {};
   window.addEventListener("storage", callback);
@@ -237,6 +264,20 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
   const [rewardNotice, setRewardNotice] = useState<string | null>(null);
   const [isPressing, setIsPressing] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(false);
+
+  // Zoom & Pan states
+  const [zoomIndex, setZoomIndex] = useState<number>(0);
+  const [availableDimensions, setAvailableDimensions] = useState<{ width: number; height: number }>({
+    width: 700,
+    height: 520,
+  });
+  const [isSpacePressed, setIsSpacePressed] = useState<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const mousePosRef = useRef<{ x: number; y: number } | null>(null);
+  const dragStartRef = useRef<{ x: number; y: number; scrollLeft: number; scrollTop: number } | null>(null);
 
   const rawBestTimes = useSyncExternalStore(subscribeBestTimes, getBestTimesSnapshot, getServerBestTimesSnapshot);
   const bestTimes = useMemo<Record<Difficulty, number | null>>(() => {
@@ -284,10 +325,12 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
     setDetonatedCell(null);
     setRewardNotice(null);
     setIsPressing(false);
+    setZoomIndex(0);
   }, [config.rows, config.cols]);
 
   const handleDifficultySelect = (d: Difficulty) => {
     setDifficulty(d);
+    setZoomIndex(0);
     const cfg = CONFIGS[d];
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -302,32 +345,253 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
     setIsPressing(false);
   };
 
-  // Keyboard controls listener
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger if user is typing in an input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+  const tileDims = useMemo(() => getTileDimensions(difficulty, compact), [difficulty, compact]);
+  const isDense = difficulty === "hard" || difficulty === "medium";
+  const rawBoardWidth = config.cols * tileDims.size + (config.cols - 1) * 1 + 16;
+  const rawBoardHeight = config.rows * tileDims.size + (config.rows - 1) * 1 + 16;
 
-      if (e.key === "r" || e.key === "R") {
-        resetGame();
-      } else if (e.key === "d" || e.key === "D") {
-        setMode("dig");
-      } else if (e.key === "f" || e.key === "F") {
-        setMode("flag");
-      } else if (e.key === "m" || e.key === "M") {
-        setIsMuted((m) => !m);
+  const fitScale = useMemo(() => {
+    if (rawBoardWidth <= 0 || rawBoardHeight <= 0) return 1.0;
+    const scaleW = availableDimensions.width / rawBoardWidth;
+    const scaleH = availableDimensions.height / rawBoardHeight;
+    return Math.min(1.0, Math.min(scaleW, scaleH));
+  }, [availableDimensions.width, availableDimensions.height, rawBoardWidth, rawBoardHeight]);
+
+  const effectiveScale = fitScale * ZOOM_LEVELS[zoomIndex];
+  const sizerWidth = Math.round(rawBoardWidth * effectiveScale);
+  const sizerHeight = Math.round(rawBoardHeight * effectiveScale);
+  const viewportHeight = zoomIndex === 0
+    ? Math.min(sizerHeight, availableDimensions.height)
+    : availableDimensions.height;
+
+  const handleZoomChange = useCallback(
+    (getNextIndex: (current: number) => number) => {
+      setZoomIndex((currentIdx) => {
+        const nextIdx = getNextIndex(currentIdx);
+        if (nextIdx === currentIdx) return currentIdx;
+
+        const container = viewportRef.current;
+        if (container && nextIdx > 0) {
+          const clientW = container.clientWidth;
+          const clientH = container.clientHeight;
+          const scrollL = container.scrollLeft;
+          const scrollT = container.scrollTop;
+
+          const currentScale = fitScale * ZOOM_LEVELS[currentIdx];
+          const nextScale = fitScale * ZOOM_LEVELS[nextIdx];
+
+          const curSizerW = Math.round(rawBoardWidth * currentScale);
+          const curSizerH = Math.round(rawBoardHeight * currentScale);
+
+          let focusX = scrollL + clientW / 2;
+          let focusY = scrollT + clientH / 2;
+          let viewOffsetRelX = clientW / 2;
+          let viewOffsetRelY = clientH / 2;
+
+          if (mousePosRef.current) {
+            const rect = container.getBoundingClientRect();
+            const relX = mousePosRef.current.x - rect.left;
+            const relY = mousePosRef.current.y - rect.top;
+            if (relX >= 0 && relX <= clientW && relY >= 0 && relY <= clientH) {
+              focusX = scrollL + relX;
+              focusY = scrollT + relY;
+              viewOffsetRelX = relX;
+              viewOffsetRelY = relY;
+            }
+          }
+
+          const ratioX = curSizerW > 0 ? focusX / curSizerW : 0.5;
+          const ratioY = curSizerH > 0 ? focusY / curSizerH : 0.5;
+
+          const newSizerW = Math.round(rawBoardWidth * nextScale);
+          const newSizerH = Math.round(rawBoardHeight * nextScale);
+
+          requestAnimationFrame(() => {
+            if (container) {
+              container.scrollLeft = Math.max(0, ratioX * newSizerW - viewOffsetRelX);
+              container.scrollTop = Math.max(0, ratioY * newSizerH - viewOffsetRelY);
+            }
+          });
+        }
+
+        return nextIdx;
+      });
+    },
+    [fitScale, rawBoardWidth, rawBoardHeight]
+  );
+
+  // Measure available dimensions for responsive fit
+  useEffect(() => {
+    const updateDimensions = () => {
+      const container = wrapperRef.current;
+      const width = container ? container.clientWidth : 700;
+      const height = typeof window !== "undefined" ? Math.min(window.innerHeight * 0.65, 620) : 520;
+      setAvailableDimensions({
+        width: Math.max(280, width - 8),
+        height: Math.max(300, height),
+      });
+    };
+
+    updateDimensions();
+
+    const container = wrapperRef.current;
+    let observer: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined" && container) {
+      observer = new ResizeObserver(updateDimensions);
+      observer.observe(container);
+    }
+
+    window.addEventListener("resize", updateDimensions);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("resize", updateDimensions);
+    };
+  }, []);
+
+  // Cmd + Wheel / Trackpad pinch to zoom
+  useEffect(() => {
+    const el = viewportRef.current;
+    if (!el) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      if (e.metaKey || e.ctrlKey) {
+        e.preventDefault();
+        if (e.deltaY < 0) {
+          handleZoomChange((idx) => Math.min(ZOOM_LEVELS.length - 1, idx + 1));
+        } else if (e.deltaY > 0) {
+          handleZoomChange((idx) => Math.max(0, idx - 1));
+        }
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [resetGame]);
+    el.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", handleWheel);
+    };
+  }, [handleZoomChange]);
+
+  // Keyboard controls listener (Command +/- zoom, shortcuts, pan mode)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+
+      const isCmdOrCtrl = e.metaKey || e.ctrlKey;
+
+      if (isCmdOrCtrl) {
+        if (e.key === "+" || e.key === "=" || e.code === "Equal" || e.code === "NumpadAdd") {
+          e.preventDefault();
+          handleZoomChange((idx) => Math.min(ZOOM_LEVELS.length - 1, idx + 1));
+          return;
+        }
+        if (e.key === "-" || e.key === "_" || e.code === "Minus" || e.code === "NumpadSubtract") {
+          e.preventDefault();
+          handleZoomChange((idx) => Math.max(0, idx - 1));
+          return;
+        }
+        if (e.key === "0" || e.code === "Digit0" || e.code === "Numpad0") {
+          e.preventDefault();
+          handleZoomChange(() => 0);
+          return;
+        }
+      }
+
+      if (!e.metaKey && !e.ctrlKey && !e.altKey) {
+        if (e.code === "Space" && !e.repeat) {
+          e.preventDefault();
+          setIsSpacePressed(true);
+        } else if (e.key === "r" || e.key === "R") {
+          resetGame();
+        } else if (e.key === "d" || e.key === "D") {
+          setMode("dig");
+        } else if (e.key === "f" || e.key === "F") {
+          setMode("flag");
+        } else if (e.key === "m" || e.key === "M") {
+          setIsMuted((m) => !m);
+        }
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        setIsSpacePressed(false);
+        setIsDragging(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { passive: false });
+    window.addEventListener("keyup", handleKeyUp);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleZoomChange, resetGame]);
+
+  // Global mouseup to cancel dragging & pressing
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsPressing(false);
+      setIsDragging(false);
+      dragStartRef.current = null;
+    };
+    window.addEventListener("mouseup", handleGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", handleGlobalMouseUp);
+  }, []);
+
+  const handleViewportMouseDown = (e: React.MouseEvent) => {
+    if (e.button === 1 || (e.button === 0 && isSpacePressed)) {
+      e.preventDefault();
+      setIsDragging(true);
+      if (viewportRef.current) {
+        dragStartRef.current = {
+          x: e.clientX,
+          y: e.clientY,
+          scrollLeft: viewportRef.current.scrollLeft,
+          scrollTop: viewportRef.current.scrollTop,
+        };
+      }
+      return;
+    }
+
+    if (e.button === 0 && !isSpacePressed) {
+      setIsPressing(true);
+    }
+  };
+
+  const handleViewportMouseMove = (e: React.MouseEvent) => {
+    if (viewportRef.current) {
+      mousePosRef.current = { x: e.clientX, y: e.clientY };
+    }
+
+    if (isDragging && dragStartRef.current && viewportRef.current) {
+      const dx = e.clientX - dragStartRef.current.x;
+      const dy = e.clientY - dragStartRef.current.y;
+      viewportRef.current.scrollLeft = dragStartRef.current.scrollLeft - dx;
+      viewportRef.current.scrollTop = dragStartRef.current.scrollTop - dy;
+    }
+  };
+
+  const handleViewportMouseUp = () => {
+    setIsPressing(false);
+    if (isDragging) {
+      setIsDragging(false);
+      dragStartRef.current = null;
+    }
+  };
+
+  const handleViewportMouseLeave = () => {
+    mousePosRef.current = null;
+    setIsPressing(false);
+    if (isDragging) {
+      setIsDragging(false);
+      dragStartRef.current = null;
+    }
+  };
 
   // Timer interval handling
   useEffect(() => {
     if (gameStatus === "playing") {
       timerRef.current = setInterval(() => {
-        setTimer((t) => (t >= 999 ? 999 : t + 1));
+        setTimer((t) => (t >= 9999 ? 9999 : t + 1));
       }, 1000);
     } else {
       if (timerRef.current) {
@@ -406,13 +670,14 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
 
     play8BitSound("click", isMuted);
 
-    // Flood fill
+    // Flood fill (O(N) BFS with index pointer)
     const newBoard = currentBoard.map((row) => row.map((cl) => ({ ...cl })));
     const queue: [number, number][] = [[r, c]];
     newBoard[r][c].isRevealed = true;
 
-    while (queue.length > 0) {
-      const [currR, currC] = queue.shift()!;
+    let head = 0;
+    while (head < queue.length) {
+      const [currR, currC] = queue[head++];
       const currCell = newBoard[currR][currC];
 
       if (currCell.neighborMines === 0) {
@@ -489,9 +754,10 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
         return;
       }
 
-      // Continue cascade for any 0s uncovered by chording
-      while (queue.length > 0) {
-        const [currR, currC] = queue.shift()!;
+      // Continue cascade for any 0s uncovered by chording (O(N) BFS)
+      let head = 0;
+      while (head < queue.length) {
+        const [currR, currC] = queue[head++];
         const currCell = newBoard[currR][currC];
         if (currCell.neighborMines === 0) {
           for (const [dr, dc] of DIRECTIONS) {
@@ -520,6 +786,7 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
     if (e) {
       e.preventDefault();
     }
+    if (isDragging || isSpacePressed) return;
     if (gameStatus === "won" || gameStatus === "lost") return;
 
     const cell = board[r]?.[c];
@@ -542,6 +809,7 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
   };
 
   const handleCellClick = (r: number, c: number) => {
+    if (isDragging || isSpacePressed) return;
     const cell = board[r]?.[c];
     if (!cell) return;
 
@@ -581,20 +849,16 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
     }
   };
 
-  const getFaceIcon = () => {
-    if (gameStatus === "won") return "😎";
-    if (gameStatus === "lost") return "😵";
-    if (isPressing) return "😮";
-    return "🙂";
-  };
-
-  const remainingMines = Math.max(-99, config.mines - flagCount);
+  const digitCount = config.mines >= 1000 ? 4 : 3;
+  const remainingMines = Math.max(-999, config.mines - flagCount);
   const formattedMines = remainingMines < 0
-    ? `-${Math.abs(remainingMines).toString().padStart(2, "0")}`
-    : remainingMines.toString().padStart(3, "0");
-  const formattedTimer = timer.toString().padStart(3, "0");
+    ? `-${Math.abs(remainingMines).toString().padStart(digitCount - 1, "0")}`
+    : remainingMines.toString().padStart(digitCount, "0");
+  const formattedTimer = Math.min(timer, 9999).toString().padStart(digitCount, "0");
 
   const currentBest = bestTimes[difficulty];
+  const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.platform);
+  const cmdKeySymbol = isMac ? "⌘" : "Ctrl";
 
   return (
     <div className="flex flex-col items-center select-none w-full max-w-full">
@@ -625,8 +889,38 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
           ))}
         </div>
 
-        {/* Input Mode Switcher & Sound Mute Toggle */}
+        {/* Input Mode Switcher, Zoom Controls & Sound Mute Toggle */}
         <div className="flex items-center gap-2">
+          {/* Zoom Controls */}
+          <div className="flex items-center gap-1 p-1 rounded-lg border border-gray-800 bg-[#0e0e1f]">
+            <button
+              type="button"
+              onClick={() => handleZoomChange((idx) => Math.max(0, idx - 1))}
+              disabled={zoomIndex === 0}
+              className="px-2 py-1 rounded text-[10px] font-pixel text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
+              title="Zoom Out [Cmd -]"
+            >
+              -
+            </button>
+            <button
+              type="button"
+              onClick={() => handleZoomChange(() => 0)}
+              className="px-2 py-1 rounded text-[9px] font-pixel text-emerald-400 hover:text-emerald-300 font-bold transition-colors cursor-pointer"
+              title="Reset to Full Map View [Cmd 0]"
+            >
+              {zoomIndex === 0 ? "FIT" : `${Math.round(ZOOM_LEVELS[zoomIndex] * 100)}%`}
+            </button>
+            <button
+              type="button"
+              onClick={() => handleZoomChange((idx) => Math.min(ZOOM_LEVELS.length - 1, idx + 1))}
+              disabled={zoomIndex === ZOOM_LEVELS.length - 1}
+              className="px-2 py-1 rounded text-[10px] font-pixel text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer disabled:cursor-not-allowed"
+              title="Zoom In [Cmd +]"
+            >
+              +
+            </button>
+          </div>
+
           {/* Dig / Flag Mode */}
           <div className="flex items-center gap-1.5 p-1 rounded-lg border border-gray-800 bg-[#0e0e1f]">
             <button
@@ -670,8 +964,10 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
       </div>
 
       {/* Retro Classic Cabinet Console Container */}
-      <div className="inline-block p-4 sm:p-6 rounded-2xl border-4 border-emerald-500/80 bg-[#101524] shadow-[0_0_35px_rgba(16,185,129,0.35)] relative overflow-hidden">
-        
+      <div
+        ref={wrapperRef}
+        className="inline-block p-4 sm:p-6 rounded-2xl border-4 border-emerald-500/80 bg-[#101524] shadow-[0_0_35px_rgba(16,185,129,0.35)] relative overflow-hidden max-w-full"
+      >
         {/* Top Status Bar (LED display + Smiley) */}
         <div className="mb-4 p-3 rounded-xl border-2 border-gray-800 bg-[#080b14] flex items-center justify-between gap-4 shadow-inner">
           {/* LED Mines Counter */}
@@ -680,14 +976,26 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
             <span>{formattedMines}</span>
           </div>
 
-          {/* Smiley Reset Button */}
+          {/* Main Character (GIR) Reset Button */}
           <button
             type="button"
             onClick={resetGame}
-            className="w-11 h-11 rounded-lg border-2 border-yellow-400 bg-yellow-400/20 hover:bg-yellow-400 hover:scale-105 active:scale-95 flex items-center justify-center text-2xl transition-all shadow-[0_0_15px_rgba(255,230,0,0.3)]"
-            title="Reset Game [R]"
+            className="w-11 h-11 rounded-lg border-2 border-lime-400 bg-lime-400/20 hover:bg-lime-400/40 hover:scale-105 active:scale-95 flex items-center justify-center transition-all shadow-[0_0_15px_rgba(163,230,53,0.3)] cursor-pointer overflow-hidden group p-0.5"
+            title="Reset Game [R] • Character: GIR"
           >
-            {getFaceIcon()}
+            <div
+              className={`w-9 h-9 flex items-center justify-center transition-all duration-150 ${
+                gameStatus === "won"
+                  ? "scale-110 drop-shadow-[0_0_8px_rgba(250,204,21,0.9)] animate-bounce"
+                  : gameStatus === "lost"
+                  ? "rotate-45 grayscale opacity-70 scale-90"
+                  : isPressing
+                  ? "scale-90"
+                  : "group-hover:scale-105"
+              }`}
+            >
+              <GirMascot className="w-8 h-8 pointer-events-none" showHalo={false} />
+            </div>
           </button>
 
           {/* LED Timer Display */}
@@ -697,73 +1005,129 @@ export function MinesweeperGame({ compact = false }: MinesweeperGameProps) {
           </div>
         </div>
 
-        {/* The Minefield Grid */}
+        {/* Viewport Scroll Container */}
         <div
-          className="inline-grid gap-1 p-2.5 rounded-xl border-2 border-emerald-950 bg-black shadow-inner overflow-x-auto max-w-full"
+          ref={viewportRef}
+          className={`rounded-xl border-2 border-emerald-950 bg-black shadow-inner overflow-auto relative max-w-[90vw] sm:max-w-2xl md:max-w-3xl lg:max-w-5xl flex select-none ${
+            isSpacePressed ? (isDragging ? "cursor-grabbing" : "cursor-grab") : ""
+          }`}
           style={{
-            gridTemplateColumns: `repeat(${config.cols}, minmax(0, 1fr))`,
+            height: viewportHeight > 0 ? `${viewportHeight}px` : "auto",
+            maxHeight: "68vh",
           }}
-          onMouseDown={() => setIsPressing(true)}
-          onMouseUp={() => setIsPressing(false)}
-          onMouseLeave={() => setIsPressing(false)}
+          onMouseDown={handleViewportMouseDown}
+          onMouseMove={handleViewportMouseMove}
+          onMouseUp={handleViewportMouseUp}
+          onMouseLeave={handleViewportMouseLeave}
         >
-          {board.map((row, r) =>
-            row.map((cell, c) => {
-              const isDetonated = detonatedCell?.r === r && detonatedCell?.c === c;
-              const tileSize = compact ? "32px" : "38px";
+          {/* Sizer Container (Sets scrollable content dimensions) */}
+          <div
+            style={{
+              width: `${sizerWidth}px`,
+              height: `${sizerHeight}px`,
+              position: "relative",
+              flexShrink: 0,
+              margin: "auto",
+              transition: isDragging ? "none" : "width 0.15s ease-out, height 0.15s ease-out",
+            }}
+          >
+            {/* Transformed Content Container */}
+            <div
+              style={{
+                width: `${rawBoardWidth}px`,
+                height: `${rawBoardHeight}px`,
+                transform: `scale(${effectiveScale})`,
+                transformOrigin: "0 0",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transition: isDragging ? "none" : "transform 0.15s ease-out",
+              }}
+            >
+              {/* The Minefield Grid */}
+              <div
+                className="inline-grid gap-[1px] p-2 bg-black select-none"
+                style={{
+                  gridTemplateColumns: `repeat(${config.cols}, ${tileDims.sizeStr})`,
+                  width: `${rawBoardWidth}px`,
+                  height: `${rawBoardHeight}px`,
+                }}
+              >
+                {board.map((row, r) =>
+                  row.map((cell, c) => {
+                    const isDetonated = detonatedCell?.r === r && detonatedCell?.c === c;
 
-              return (
-                <button
-                  key={`${r}-${c}`}
-                  type="button"
-                  onClick={() => handleCellClick(r, c)}
-                  onContextMenu={(e) => handleToggleFlag(r, c, e)}
-                  disabled={gameStatus === "won" || gameStatus === "lost"}
-                  style={{
-                    width: tileSize,
-                    height: tileSize,
-                    minWidth: tileSize,
-                    minHeight: tileSize,
-                  }}
-                  className={`
-                    flex items-center justify-center font-pixel text-xs sm:text-sm font-bold transition-transform duration-75 select-none rounded-sm
-                    ${
-                      cell.isRevealed
-                        ? isDetonated
-                          ? "bg-red-600 text-white border-2 border-red-300 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]"
-                          : cell.isMine
-                          ? "bg-red-950/70 border border-red-800 text-red-400"
-                          : "bg-[#181d2e] border border-gray-800 text-gray-200"
-                        : "bg-[#252c42] hover:bg-[#313955] border-t-2 border-l-2 border-gray-400 border-b-2 border-r-2 border-gray-900 active:border-gray-700 active:bg-[#1a2033] shadow-sm"
-                    }
-                  `}
-                >
-                  {cell.isRevealed ? (
-                    cell.isMine ? (
-                      <span className="text-sm">💣</span>
-                    ) : cell.neighborMines > 0 ? (
-                      <span className={getNumberColor(cell.neighborMines)}>
-                        {cell.neighborMines}
-                      </span>
-                    ) : (
-                      ""
-                    )
-                  ) : cell.isFlagged ? (
-                    <span className="text-sm filter drop-shadow">🚩</span>
-                  ) : (
-                    ""
-                  )}
-                </button>
-              );
-            })
-          )}
+                    return (
+                      <button
+                        key={`${r}-${c}`}
+                        type="button"
+                        onClick={() => handleCellClick(r, c)}
+                        onContextMenu={(e) => handleToggleFlag(r, c, e)}
+                        disabled={gameStatus === "won" || gameStatus === "lost"}
+                        style={{
+                          width: tileDims.sizeStr,
+                          height: tileDims.sizeStr,
+                          minWidth: tileDims.sizeStr,
+                          minHeight: tileDims.sizeStr,
+                        }}
+                        className={`
+                          flex items-center justify-center font-pixel ${tileDims.fontSize} font-bold transition-transform duration-75 select-none rounded-[1px] p-0 leading-none ${
+                            isSpacePressed
+                              ? isDragging
+                                ? "cursor-grabbing"
+                                : "cursor-grab"
+                              : "cursor-pointer"
+                          }
+                          ${
+                            cell.isRevealed
+                              ? isDetonated
+                                ? "bg-red-600 text-white border-2 border-red-300 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]"
+                                : cell.isMine
+                                ? "bg-red-950/70 border border-red-800 text-red-400"
+                                : "bg-[#181d2e] border border-gray-800/80 text-gray-200"
+                              : isDense
+                              ? "bg-[#252c42] hover:bg-[#313955] border-t border-l border-gray-500 border-b border-r border-gray-950 active:border-gray-700 active:bg-[#1a2033]"
+                              : "bg-[#252c42] hover:bg-[#313955] border-t-2 border-l-2 border-gray-400 border-b-2 border-r-2 border-gray-900 active:border-gray-700 active:bg-[#1a2033] shadow-sm"
+                          }
+                        `}
+                      >
+                        {cell.isRevealed ? (
+                          cell.isMine ? (
+                            <span className={tileDims.iconSize}>💣</span>
+                          ) : cell.neighborMines > 0 ? (
+                            <span className={getNumberColor(cell.neighborMines)}>
+                              {cell.neighborMines}
+                            </span>
+                          ) : (
+                            ""
+                          )
+                        ) : cell.isFlagged ? (
+                          <span className={`${tileDims.iconSize} filter drop-shadow`}>🚩</span>
+                        ) : (
+                          ""
+                        )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Footer info: Shortcuts, Personal Best, Reward Pot */}
         <div className="mt-3 pt-3 border-t border-gray-800 flex flex-wrap items-center justify-between gap-2 text-[9px] text-gray-400">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-emerald-400">●</span>
-            <span>CHORDING: CLICK REVEALED NUMBER</span>
+            <span>CHORD: CLICK REVEALED NUM</span>
+            <span className="text-gray-600">|</span>
+            <span className="text-cyan-400">ZOOM: {cmdKeySymbol}+ / {cmdKeySymbol}- ({cmdKeySymbol}0 TO FIT)</span>
+            {zoomIndex > 0 && (
+              <>
+                <span className="text-gray-600">|</span>
+                <span className="text-pink-400">PAN: SPACE + DRAG</span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
