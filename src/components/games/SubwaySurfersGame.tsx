@@ -34,6 +34,14 @@ interface Item {
   hit: boolean;
 }
 
+interface CoinPickup {
+  x: number;
+  y: number;
+  startedAt: number;
+}
+
+const COIN_PICKUP_DURATION = 0.4;
+
 class ArcadeSound {
   private ctx: AudioContext | null = null;
   public enabled: boolean = true;
@@ -242,6 +250,7 @@ export function SubwaySurfersGame() {
   const itemsRef = useRef<Item[]>([]);
   const distRef = useRef<number>(0);
   const coinsRef = useRef<number>(0);
+  const coinPickupsRef = useRef<CoinPickup[]>([]);
   const clockRef = useRef<number>(0);
   const spawnRef = useRef<number>(0.45);
   const jumpRef = useRef<number>(0);
@@ -432,6 +441,41 @@ export function SubwaySurfersGame() {
     }
     ctx.restore();
 
+    // Collected coins leave the track and shrink into the runner's mouth.
+    for (const pickup of coinPickupsRef.current) {
+      const progress = Math.min(1, (clock - pickup.startedAt) / COIN_PICKUP_DURATION);
+      const travel = Math.min(1, progress / 0.65);
+      const eased = 1 - Math.pow(1 - travel, 3);
+      const mouthY = py - 35 * scale;
+      const x = pickup.x + (px - pickup.x) * eased;
+      const y = pickup.y + (mouthY - pickup.y) * eased;
+      ctx.save();
+      ctx.shadowColor = "#facc15";
+      ctx.shadowBlur = 16;
+      if (travel < 1) {
+        const radius = 11 * (1 - travel);
+        ctx.beginPath();
+        ctx.ellipse(x, y, radius * 0.75, radius, 0, 0, Math.PI * 2);
+        ctx.fillStyle = "#facc15";
+        ctx.fill();
+        ctx.strokeStyle = "#fffbeb";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1 - progress;
+      for (let i = 0; i < 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        const radius = 8 + progress * 30;
+        fill(ctx, px + Math.cos(angle) * radius - 2, mouthY + Math.sin(angle) * radius - 2, 4, 4, "#fde68a");
+      }
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = "#fef08a";
+      ctx.font = "900 18px system-ui, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("+1", px, mouthY - 24 - progress * 30);
+      ctx.restore();
+    }
+
     // Top subtle lane prompt
     ctx.textAlign = "center";
     ctx.font = "900 13px system-ui, sans-serif";
@@ -500,6 +544,9 @@ export function SubwaySurfersGame() {
       lastTimeRef.current = now;
 
       clockRef.current += dt;
+      coinPickupsRef.current = coinPickupsRef.current.filter(
+        (pickup) => clockRef.current - pickup.startedAt < COIN_PICKUP_DURATION
+      );
       distRef.current += dt * speedRef.current * 112;
       speedRef.current = Math.min(0.93, 0.47 + clockRef.current * 0.004);
       jumpRef.current = Math.max(0, jumpRef.current - dt);
@@ -552,6 +599,14 @@ export function SubwaySurfersGame() {
             if (item.type === "coin") {
               coinsRef.current += 1;
               audioRef.current?.playCoin();
+              const position = xy(item.lane, nextZ);
+              coinPickupsRef.current.push({
+                x: position.x,
+                y: position.y - 21 * position.s,
+                startedAt: clockRef.current,
+              });
+              // Do not retain a collected coin in the moving track items.
+              continue;
             } else if (item.type === "barrier" && currentJump > 0.16) {
               // Successfully leaped over barrier!
             } else if (item.type === "sign" && currentSlide > 0.14) {
@@ -601,6 +656,7 @@ export function SubwaySurfersGame() {
     laneRef.current = 1;
     smoothLaneRef.current = 1;
     itemsRef.current = [];
+    coinPickupsRef.current = [];
     distRef.current = 0;
     coinsRef.current = 0;
     clockRef.current = 0;
