@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTickets } from "@/context/TicketContext";
+import { recordScore } from "@/data/leaderboard";
 
 // --- IRKEN AUDIO SYNTHESIZER ---
 class RetroSoundEngine {
@@ -464,7 +465,7 @@ export default function CrossyRoadClient() {
   const coinsCollectedRef = useRef(0);
   const idleTimerRef = useRef(0);
   const autoScrollActiveRef = useRef(false);
-  const graceTimerRef = useRef(0);
+  const gameOverAtRef = useRef(0);
   const droneStateRef = useRef({ active: false, y: -5 });
   const particlesRef = useRef<Particle[]>([]);
   const floatTextsRef = useRef<FloatingText[]>([]);
@@ -474,31 +475,35 @@ export default function CrossyRoadClient() {
   const [showMissions, setShowMissions] = useState(false);
   const [toastMission, setToastMission] = useState<{ title: string; reward: number; icon: string } | null>(null);
 
+  const DEFAULT_STATS: AchievementStats = {
+    treesBonked: 0,
+    trainHits: 0,
+    dibVanHits: 0,
+    girHits: 0,
+    cupcakesCollected: 0,
+    piggiesRidden: 0,
+    sludgeMelts: 0,
+    maxSingleScore: 0,
+  };
+
   const [achievementStats, setAchievementStats] = useState<AchievementStats>(() => {
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem("retro_arcade_zim_stats_v1");
-        if (saved) return JSON.parse(saved);
+        if (saved) return { ...DEFAULT_STATS, ...JSON.parse(saved) };
       } catch {
         // ignore
       }
     }
-    return {
-      treesBonked: 0,
-      trainHits: 0,
-      dibVanHits: 0,
-      girHits: 0,
-      cupcakesCollected: 0,
-      piggiesRidden: 0,
-      sludgeMelts: 0,
-      maxSingleScore: 0,
-    };
+    return DEFAULT_STATS;
   });
 
   const [claimedAchievements, setClaimedAchievements] = useState<Record<string, boolean>>(() => {
     if (typeof window !== "undefined") {
       try {
-        const saved = localStorage.getItem("retro_arcade_zim_claimed_achievements_v1");
+        const saved =
+          localStorage.getItem("retro_arcade_zim_claimed_achievements_v1") ||
+          localStorage.getItem("retro_arcade_zim_claimed_v1");
         if (saved) return JSON.parse(saved);
       } catch {
         // ignore
@@ -590,8 +595,9 @@ export default function CrossyRoadClient() {
       const currentStats = achievementStatsRef.current;
       const currentClaimed = claimedAchievementsRef.current;
 
-      const nextVal = isAbsolute ? Math.max(currentStats[key], amount) : currentStats[key] + amount;
-      if (nextVal === currentStats[key]) return;
+      const prevVal = currentStats[key] ?? 0;
+      const nextVal = isAbsolute ? Math.max(prevVal, amount) : prevVal + amount;
+      if (nextVal === prevVal) return;
 
       const nextStats = { ...currentStats, [key]: nextVal };
       achievementStatsRef.current = nextStats;
@@ -864,7 +870,6 @@ export default function CrossyRoadClient() {
     };
     cameraYRef.current = 0;
     autoScrollActiveRef.current = false;
-    graceTimerRef.current = 0;
     maxRowReachedRef.current = 0;
     coinsCollectedRef.current = 0;
     idleTimerRef.current = 0;
@@ -887,6 +892,7 @@ export default function CrossyRoadClient() {
     (reason: string) => {
       if (playerRef.current.dead) return;
       playerRef.current.dead = true;
+      gameOverAtRef.current = performance.now();
       setGameState("GAMEOVER");
       setDeathReason(reason);
 
@@ -896,6 +902,7 @@ export default function CrossyRoadClient() {
       setTicketsEarned(earned);
 
       addTickets(earned);
+      recordScore("crossy-road", finalScore);
       soundEngine.current?.playFanfare();
 
       setHighScore((prev) => {
@@ -909,8 +916,10 @@ export default function CrossyRoadClient() {
         }
         return nextHigh;
       });
+
+      recordAchievementProgress("maxSingleScore", finalScore, true);
     },
-    [addTickets]
+    [addTickets, recordAchievementProgress]
   );
 
   // Trigger Movement with Tree / Gnome Bonk Response
@@ -919,7 +928,9 @@ export default function CrossyRoadClient() {
       soundEngine.current?.init();
 
       if (gameState === "GAMEOVER") {
-        startGame();
+        if (performance.now() - gameOverAtRef.current > 500) {
+          startGame();
+        }
         return;
       }
 
@@ -936,7 +947,9 @@ export default function CrossyRoadClient() {
 
       if (dRow > 0) {
         player.facing = "UP";
-        autoScrollActiveRef.current = true;
+        if (newRow > 0) {
+          autoScrollActiveRef.current = true;
+        }
       } else if (dRow < 0) {
         player.facing = "DOWN";
       } else if (dCol > 0) {
@@ -984,6 +997,13 @@ export default function CrossyRoadClient() {
         } else {
           recordAchievementProgress("treesBonked", 1);
           soundEngine.current?.playBonk();
+          floatTextsRef.current.push({
+            text: "BONK! 🌲",
+            x: obsX,
+            y: obsY - 14,
+            life: 0,
+            color: "#ff007f",
+          });
         }
 
         player.bonkShake = 0.16;
@@ -1098,56 +1118,49 @@ export default function CrossyRoadClient() {
 
       // Camera Follow & Screen Auto-Advance (Crossy Road Mechanics)
       if (gameState === "PLAYING") {
-        if (!autoScrollActiveRef.current) {
-          graceTimerRef.current += dt;
-          if (player.row > 0 || graceTimerRef.current > 1.8) {
-            autoScrollActiveRef.current = true;
-          }
-        }
-
         if (autoScrollActiveRef.current) {
-          // Slow steady auto-advance upwards
+          // Slow steady auto-advance upwards (ONLY starts after the player has moved forward!)
           const creepSpeed = 0.85 + Math.min(maxRowReachedRef.current * 0.008, 0.75);
           cameraYRef.current += creepSpeed * dt;
-        }
 
-        // Camera smoothly follows player when they push ahead
-        const targetCamY = Math.max(0, player.row - 3.5);
-        if (targetCamY > cameraYRef.current) {
-          cameraYRef.current += (targetCamY - cameraYRef.current) * (dt * 5.5);
-        }
+          // Camera smoothly follows player when they push ahead
+          const targetCamY = Math.max(0, player.row - 3.5);
+          if (targetCamY > cameraYRef.current) {
+            cameraYRef.current += (targetCamY - cameraYRef.current) * (dt * 5.5);
+          }
 
-        // Check if player is overtaken by the bottom of the advancing screen!
-        const curPRow = player.isHopping
-          ? player.row + (player.targetRow - player.row) * player.hopProgress
-          : player.row;
+          // Check if player is overtaken by the bottom of the advancing screen!
+          const curPRow = player.isHopping
+            ? player.row + (player.targetRow - player.row) * player.hopProgress
+            : player.row;
 
-        if (!player.dead && curPRow < cameraYRef.current - 0.42) {
-          const curPCol = player.isHopping
-            ? player.col + (player.targetCol - player.col) * player.hopProgress
-            : player.col;
-          const px = curPCol * cellW + cellW / 2;
-          const py = viewH - (curPRow - cameraYRef.current + 1) * cellH + cellH / 2;
+          if (!player.dead && curPRow < cameraYRef.current - 0.42) {
+            const curPCol = player.isHopping
+              ? player.col + (player.targetCol - player.col) * player.hopProgress
+              : player.col;
+            const px = curPCol * cellW + cellW / 2;
+            const py = viewH - (curPRow - cameraYRef.current + 1) * cellH + cellH / 2;
 
-          soundEngine.current?.playCrash();
-          spawnParticles(px, Math.min(viewH - 10, py), "#76ff03", 26, 6);
-          spawnParticles(px, Math.min(viewH - 10, py), "#ff007f", 20, 5);
-          triggerGameOver("CONSUMED BY THE ADVANCING SCREEN OF DOOM!");
-        }
-
-        // Dib's Drone Inaction Timer
-        idleTimerRef.current += dt;
-        if (idleTimerRef.current > 6.5 && !droneStateRef.current.active) {
-          droneStateRef.current.active = true;
-          droneStateRef.current.y = player.row + 9;
-          soundEngine.current?.playDroneSwoop();
-        }
-
-        if (droneStateRef.current.active) {
-          droneStateRef.current.y -= dt * 16;
-          if (droneStateRef.current.y <= player.row + 0.3 && !player.dead) {
-            triggerGameOver("CAPTURED BY DIB'S PARANORMAL DRONE!");
             soundEngine.current?.playCrash();
+            spawnParticles(px, Math.min(viewH - 10, py), "#76ff03", 26, 6);
+            spawnParticles(px, Math.min(viewH - 10, py), "#ff007f", 20, 5);
+            triggerGameOver("CONSUMED BY THE ADVANCING SCREEN OF DOOM!");
+          }
+
+          // Dib's Drone Inaction Timer (only ticks after player has started advancing)
+          idleTimerRef.current += dt;
+          if (idleTimerRef.current > 6.5 && !droneStateRef.current.active) {
+            droneStateRef.current.active = true;
+            droneStateRef.current.y = player.row + 9;
+            soundEngine.current?.playDroneSwoop();
+          }
+
+          if (droneStateRef.current.active) {
+            droneStateRef.current.y -= dt * 16;
+            if (droneStateRef.current.y <= player.row + 0.3 && !player.dead) {
+              triggerGameOver("CAPTURED BY DIB'S PARANORMAL DRONE!");
+              soundEngine.current?.playCrash();
+            }
           }
         }
       }
@@ -1170,11 +1183,13 @@ export default function CrossyRoadClient() {
                 ? player.col + (player.targetCol - player.col) * player.hopProgress
                 : player.col;
 
-              if (Math.abs(curPRow - lane.index) < 0.45) {
+              const rowDist = Math.abs(curPRow - lane.index);
+              const isTargetingLane = player.isHopping && player.targetRow === lane.index && player.hopProgress > 0.25;
+              if (rowDist < 0.52 || isTargetingLane) {
                 const vLeft = v.x;
                 const vRight = v.x + v.width;
-                const pLeft = curPCol + 0.2;
-                const pRight = curPCol + 0.8;
+                const pLeft = curPCol + 0.15;
+                const pRight = curPCol + 0.85;
                 if (pRight > vLeft && pLeft < vRight) {
                   soundEngine.current?.playCrash();
                   const px = curPCol * cellW + cellW / 2;
@@ -1256,15 +1271,26 @@ export default function CrossyRoadClient() {
             }
           } else {
             tr.x += tr.speed * dt;
-            if (gameState === "PLAYING" && !player.dead && Math.abs(player.row - lane.index) < 0.45) {
-              if (player.col >= tr.x - 0.5 && player.col <= tr.x + tr.length + 0.5) {
-                recordAchievementProgress("trainHits", 1);
-                soundEngine.current?.playCrash();
-                const px = player.col * cellW + cellW / 2;
-                const py = viewH - (player.row - cameraYRef.current + 1) * cellH + cellH / 2;
-                spawnParticles(px, py, "#76ff03", 26, 7);
-                spawnParticles(px, py, "#ff007f", 20, 5);
-                triggerGameOver("VAPORIZED BY THE IRKEN DOOM TRAIN!");
+            if (gameState === "PLAYING" && !player.dead) {
+              const curPRow = player.isHopping
+                ? player.row + (player.targetRow - player.row) * player.hopProgress
+                : player.row;
+              const curPCol = player.isHopping
+                ? player.col + (player.targetCol - player.col) * player.hopProgress
+                : player.col;
+
+              const rowDist = Math.abs(curPRow - lane.index);
+              const isTargetingLane = player.isHopping && player.targetRow === lane.index && player.hopProgress > 0.25;
+              if (rowDist < 0.52 || isTargetingLane) {
+                if (curPCol >= tr.x - 0.5 && curPCol <= tr.x + tr.length + 0.5) {
+                  recordAchievementProgress("trainHits", 1);
+                  soundEngine.current?.playCrash();
+                  const px = curPCol * cellW + cellW / 2;
+                  const py = viewH - (curPRow - cameraYRef.current + 1) * cellH + cellH / 2;
+                  spawnParticles(px, py, "#76ff03", 26, 7);
+                  spawnParticles(px, py, "#ff007f", 20, 5);
+                  triggerGameOver("VAPORIZED BY THE IRKEN DOOM TRAIN!");
+                }
               }
             }
             if (tr.x > totalCols + 12) {
@@ -1749,6 +1775,40 @@ export default function CrossyRoadClient() {
         }
 
         ctx.restore();
+      } else {
+        // Render squished / defeated Zim with X eyes and alien splat when hit!
+        ctx.save();
+        ctx.translate(px, py + cellH / 4);
+
+        // Green alien ooze splat puddle
+        ctx.fillStyle = "rgba(118, 255, 3, 0.85)";
+        ctx.beginPath();
+        ctx.ellipse(0, 6, cellW * 0.48, 10, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Flattened Zim body
+        ctx.scale(1.25, 0.32);
+        if (zimImgRef.current && zimImgRef.current.complete) {
+          const targetW = cellW * 0.95;
+          const targetH = targetW * (zimImgRef.current.height / zimImgRef.current.width);
+          ctx.drawImage(zimImgRef.current, -targetW / 2, -targetH, targetW, targetH);
+        }
+
+        // Neon X eyes on splat
+        ctx.strokeStyle = "#ff007f";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(-10, -6);
+        ctx.lineTo(-4, 0);
+        ctx.moveTo(-4, -6);
+        ctx.lineTo(-10, 0);
+        ctx.moveTo(4, -6);
+        ctx.lineTo(10, 0);
+        ctx.moveTo(10, -6);
+        ctx.lineTo(4, 0);
+        ctx.stroke();
+
+        ctx.restore();
       }
 
       // Draw Dib's Drone Swoop
@@ -2058,7 +2118,9 @@ export default function CrossyRoadClient() {
 
       if (e.code === "Space" || e.code === "Enter") {
         if (gameState === "GAMEOVER") {
-          startGame();
+          if (performance.now() - gameOverAtRef.current > 500) {
+            startGame();
+          }
           return;
         }
         movePlayer(0, 1);
