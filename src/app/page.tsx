@@ -91,7 +91,7 @@ export default function HomePage() {
               ARCADE <span className="text-lime-400 neon-glow-lime">CABINETS</span>
             </h2>
             <p className="text-xs font-pixel text-gray-400">
-              Crossy Road • Flappy Bird • Minesweeper • Subway Surfers • Balloon Pup
+              Crossy Road • Minesweeper • Subway Surfers • Balloon Pup
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export default function HomePage() {
           The arcade machines are assigned to the team. Each teammate builds their game canvas inside their dedicated route:
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
           
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#a3e635] space-y-2">
             <div className="font-comic text-lg text-lime-400">1. Crossy Road</div>
@@ -224,22 +224,15 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#ff0080] space-y-2">
-            <div className="font-comic text-lg text-pink-400">2. Flappy Bird</div>
-            <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
-              Assigned to <strong>Teammate 2</strong>. Route: <code className="text-yellow-300">/games/flappy-bird</code>
-            </p>
-          </div>
-
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#facc15] space-y-2">
-            <div className="font-comic text-lg text-yellow-400">3. Minesweeper</div>
+            <div className="font-comic text-lg text-yellow-400">2. Minesweeper</div>
             <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
               Assigned to <strong>Letian</strong>. Route: <code className="text-yellow-300">/games/minesweeper</code>
             </p>
           </div>
 
           <div className="p-4 rounded-xl border-3 border-black bg-black/60 shadow-[3px_3px_0_#00e5ff] space-y-2">
-            <div className="font-comic text-lg text-cyan-400">4. Subway Surfers</div>
+            <div className="font-comic text-lg text-cyan-400">3. Subway Surfers</div>
             <p className="text-[9px] font-pixel text-gray-400 leading-relaxed">
               Assigned to <strong>Teammate 4</strong>. Route: <code className="text-yellow-300">/games/subway-surfers</code>
             </p>
