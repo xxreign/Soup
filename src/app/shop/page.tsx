@@ -26,7 +26,7 @@ export default function PrizeShopPage() {
       const deficit = prize.cost - tickets;
       setNotification({
         type: "error",
-        message: `❌ NOT ENOUGH TICKETS! You have ${tickets} 🎟️, but "${prize.name}" costs ${prize.cost} 🎟️ (short by ${deficit} 🎟️). Play Crossy Road, Flappy Bird, Minesweeper, or Subway Surfers to earn more!`,
+        message: `❌ NOT ENOUGH TICKETS! You have ${tickets} 🎟️, but "${prize.name}" costs ${prize.cost} 🎟️ (short by ${deficit} 🎟️). Play Crossy Road, Minesweeper, or Subway Surfers to earn more!`,
       });
     }
 

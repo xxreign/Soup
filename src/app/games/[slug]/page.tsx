@@ -10,7 +10,7 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return GAMES.map((game) => ({
+  return GAMES.filter((game) => game.id !== "crossy-road").map((game) => ({
     slug: game.id,
   }));
 }
